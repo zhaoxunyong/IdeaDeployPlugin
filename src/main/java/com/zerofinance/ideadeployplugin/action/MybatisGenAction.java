@@ -22,11 +22,7 @@ public class MybatisGenAction extends AnAction {
                 Messages.showErrorDialog("Please pick up a valid module!", "Error");
                 return;
             }
-            String fileName = vFile != null ? vFile.getName() : null;
-            System.out.println("fileName--->"+fileName);
-
             String modulePath = vFile.getPath();
-            System.out.println("modulePath--->"+modulePath);
             DeployPluginHandler handler = new DeployPluginHandler(project, modulePath);
             handler.release();
 
