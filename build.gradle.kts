@@ -10,6 +10,10 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    implementation("org.apache.commons:commons-exec:1.3")
+}
+
 // Configure Gradle IntelliJ Plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {
     version.set("2021.2")
