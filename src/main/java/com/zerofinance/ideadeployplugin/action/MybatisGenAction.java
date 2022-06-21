@@ -28,9 +28,7 @@ public class MybatisGenAction extends AnAction {
             String modulePath = vFile.getPath();
             System.out.println("modulePath--->"+modulePath);
             DeployPluginHandler handler = new DeployPluginHandler(project, modulePath);
-            if(handler.preCheck()) {
-                handler.release();
-            }
+            handler.release();
 
         } catch (Exception e) {
             e.printStackTrace();
