@@ -27,23 +27,33 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
-        <!--icon="iconfile.png"-->
-        <toolWindow id="GitDeployPlugin"
+        <!--<toolWindow id="GitDeployPlugin"
+                    icon="AllIcons.General.Modified"
                     anchor="bottom"
-                    factoryClass="com.zerofinance.ideadeployplugin.ToolFactoryCompute"></toolWindow>
-        <!--<toolWindow id="Sample Calendar" secondary="true" icon="AllIcons.General.Modified" anchor="right"
-                    factoryClass="com.zerofinance.ideadeployplugin.MyToolWindowFactory"/>-->
+                    factoryClass="com.zerofinance.ideadeployplugin.ToolFactoryCompute"></toolWindow>-->
     </extensions>
 
     <actions>
 
-        <action id="PopupAction" class="com.zerofinance.ideadeployplugin.PopupAction" text="PopupAction"
+        <!--<action id="PopupAction" class="com.zerofinance.ideadeployplugin.PopupAction" text="PopupAction"
                 description="PopupAction">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-        </action>
-        <action id="MenuAction" class="com.zerofinance.ideadeployplugin.MenuAction" text="MenuAction"
+        </action>-->
+        <!--<action id="MenuAction" class="com.zerofinance.ideadeployplugin.MenuAction" text="MenuAction"
                 description="MenuAction">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
-        </action>
+        </action>-->
+        <!--<action id="ZeroMainAction" class="com.zerofinance.ideadeployplugin.action.ReleaseAction" text="ZeroGitDeploy"
+                description="A git deploy plugin tool">
+            <add-to-group group-id="MainMenu" anchor="after" relative-to-action="ToolsMenu"/>
+        </action>-->
+
+        <group id="ZeroMainAction" text="Zero" description="A git deploy plugin tool">
+            <add-to-group group-id="MainMenu" anchor="after" relative-to-action="ToolsMenu"/>
+            <action id="Release" class="com.zerofinance.ideadeployplugin.action.ReleaseAction" text="Release" description="Git Release" />
+            <action id="NewBranch" class="com.zerofinance.ideadeployplugin.action.NewBranchAction" text="NewBranch" description="New Branch" />
+            <action id="ChangeVersion" class="com.zerofinance.ideadeployplugin.action.ChangeVersionAction" text="ChangeVersion" description="Change Version" />
+            <action id="MybatisGen" class="com.zerofinance.ideadeployplugin.action.MybatisGenAction" text="MybatisGen" description="Mybatis Gen" />
+        </group>
     </actions>
 </idea-plugin>

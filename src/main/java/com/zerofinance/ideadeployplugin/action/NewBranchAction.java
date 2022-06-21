@@ -1,27 +1,18 @@
-package com.zerofinance.ideadeployplugin;
+package com.zerofinance.ideadeployplugin.action;
 
-import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.terminal.JBTerminalWidget;
-import com.intellij.ui.content.Content;
 import com.zerofinance.ideadeployplugin.utils.DeployPluginHandler;
-import com.zerofinance.ideadeployplugin.utils.FileHandlerUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.plugins.terminal.ShellTerminalWidget;
-import org.jetbrains.plugins.terminal.TerminalView;
 
-public class MenuAction extends AnAction {
+public class NewBranchAction extends AnAction {
 
-    @SuppressWarnings("UnstableApiUsage")
     @Override
-    public void actionPerformed(@NotNull final AnActionEvent event) {
+    public void actionPerformed(AnActionEvent event) {
         try {
             Project project = event.getProject();
 
