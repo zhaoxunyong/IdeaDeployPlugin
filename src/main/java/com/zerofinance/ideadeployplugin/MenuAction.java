@@ -2,9 +2,13 @@ package com.zerofinance.ideadeployplugin;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.filters.TextConsoleBuilder;
+import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ScriptRunnerUtil;
+import com.intellij.execution.ui.ConsoleView;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.editor.Document;
@@ -20,6 +24,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.terminal.JBTerminalWidget;
 import com.intellij.ui.content.Content;
@@ -39,6 +44,8 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class MenuAction extends AnAction {
+    private static ConsoleView view = null;
+    private static ToolWindow window = null;
     private final static String GITCHECK_BAT = "./gitCheck.sh";
 
     @SuppressWarnings("UnstableApiUsage")
@@ -61,7 +68,15 @@ public class MenuAction extends AnAction {
             String command = FileHandlerUtils.processScript(modulePath, GITCHECK_BAT);
             System.out.println("command--->"+command);
 
-            TerminalView terminalView = TerminalView.getInstance(project);
+            // https://stackoverflow.com/questions/51972122/intellij-plugin-development-print-in-console-window
+            // https://intellij-support.jetbrains.com/hc/en-us/community/posts/206756385-How-to-make-a-simple-console-output
+            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(title);
+            ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+            Content content = toolWindow.getContentManager().getFactory().createContent(consoleView.getComponent(), title, false);
+            toolWindow.getContentManager().addContent(content);
+            consoleView.print("Hello from MyPlugin!", ConsoleViewContentType.NORMAL_OUTPUT);
+
+            /*TerminalView terminalView = TerminalView.getInstance(project);
             ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID);
             if (window == null) {
                 return;
@@ -71,7 +86,12 @@ public class MenuAction extends AnAction {
             Content content = contentManager.findContent(title);
 
             if(content == null) {
-                terminalView.createLocalShellWidget(project.getBasePath(), title).executeCommand(command);
+                ShellTerminalWidget terminal = terminalView.createLocalShellWidget(project.getBasePath(), title);
+                terminal.getTerminalTextBuffer().addModelListener(() -> {
+                    String text = terminal.getTerminalTextBuffer().getLine(0).getText();
+                    System.out.println("text------>"+text);
+                });
+                terminal.executeCommand(command);
             } else {
                 Pair<Content, ShellTerminalWidget> pair = getSuitableProcess(content);
                 if(pair == null) {
@@ -80,10 +100,11 @@ public class MenuAction extends AnAction {
                 } else {
                     pair.first.setDisplayName(title);
                     contentManager.setSelectedContent(pair.first);
-                    pair.second.executeCommand(command);
+                    ShellTerminalWidget terminal = pair.second;
+                    terminal.executeCommand(command);
                 }
 
-            }
+            }*/
         } catch (Exception e) {
             //throw new RuntimeException(e);
             e.printStackTrace();

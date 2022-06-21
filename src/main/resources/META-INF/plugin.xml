@@ -26,7 +26,13 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-
+        <!-- Add your extensions here -->
+        <!--icon="iconfile.png"-->
+        <toolWindow id="MyPlugin"
+                    anchor="bottom"
+                    factoryClass="com.zerofinance.ideadeployplugin.MyToolWindowFactory"></toolWindow>
+        <!--<toolWindow id="Sample Calendar" secondary="true" icon="AllIcons.General.Modified" anchor="right"
+                    factoryClass="com.zerofinance.ideadeployplugin.MyToolWindowFactory"/>-->
     </extensions>
 
     <actions>

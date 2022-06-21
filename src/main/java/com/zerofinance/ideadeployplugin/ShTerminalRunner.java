@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
+@Deprecated
 public final class ShTerminalRunner {
     private static final Logger LOG = Logger.getInstance(LocalTerminalDirectRunner.class);
 
