@@ -67,6 +67,16 @@ public final class DeployPluginHandler {
     public DeployPluginHandler(Project project, String modulePath) {
         this.project = project;
         this.modulePath = modulePath;
+        /*// Check terminal is a git-bash
+        try {
+            String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
+            ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, "ls", null, false);
+            if(executeResult != null && executeResult.getCode() != 0) {
+                throw new DeployPluginException("The Terminal isn't a git bash, please configure it in File->Settings");
+            }
+        } catch (Exception e) {
+            throw new DeployPluginException(e.getMessage());
+        }*/
     }
     
 
@@ -426,7 +436,7 @@ public final class DeployPluginHandler {
             String pomVersion = getMavenPomVersion(rootProjectPath);
             String defaultValue = pomVersion.replace("-SNAPSHOT", "")+"."+releaseType;
 
-            String inputedVersion = input(name, defaultValue, "BranchVersion TagDate").trim();
+            String inputedVersion = input(name, defaultValue, "BranchVersion").trim();
             if( inputedVersion.indexOf(" ") != -1) {
                 throw new Exception("The version is invalid.");
             }

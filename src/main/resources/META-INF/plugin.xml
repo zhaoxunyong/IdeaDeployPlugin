@@ -50,10 +50,14 @@
 
         <group id="ZeroMainAction" text="Zero" description="A git deploy plugin tool">
             <add-to-group group-id="MainMenu" anchor="after" relative-to-action="ToolsMenu"/>
-            <action id="Release" class="com.zerofinance.ideadeployplugin.action.ReleaseAction" text="Release" description="Git Release" />
-            <action id="NewBranch" class="com.zerofinance.ideadeployplugin.action.NewBranchAction" text="NewBranch" description="New Branch" />
-            <action id="ChangeVersion" class="com.zerofinance.ideadeployplugin.action.ChangeVersionAction" text="ChangeVersion" description="Change Version" />
-            <action id="MybatisGen" class="com.zerofinance.ideadeployplugin.action.MybatisGenAction" text="MybatisGen" description="Mybatis Gen" />
+            <!-- icon can see: https://intellij-icons.jetbrains.design/ -->
+            <action id="Release" class="com.zerofinance.ideadeployplugin.action.ReleaseAction" icon="AllIcons.Actions.Lightning" text="Release" description="Git Release" />
+            <separator/>
+            <action id="NewBranch" class="com.zerofinance.ideadeployplugin.action.NewBranchAction" icon="AllIcons.Actions.OpenNewTab" text="NewBranch" description="New Branch" />
+            <separator/>
+            <action id="ChangeVersion" class="com.zerofinance.ideadeployplugin.action.ChangeVersionAction" icon="AllIcons.Actions.ChangeView" text="ChangeVersion" description="Change Version" />
+            <separator/>
+            <action id="MybatisGen" class="com.zerofinance.ideadeployplugin.action.MybatisGenAction" icon="AllIcons.Actions.InlayRenameInNoCodeFilesActive" text="MybatisGen" description="Mybatis Gen" />
         </group>
     </actions>
 </idea-plugin>
