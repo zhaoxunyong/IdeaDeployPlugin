@@ -37,27 +37,28 @@ import org.jetbrains.plugins.terminal.TerminalToolWindowFactory;
 import org.jetbrains.plugins.terminal.TerminalView;
 import org.jetbrains.plugins.terminal.arrangement.TerminalWorkingDirectoryManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 public class MenuAction extends AnAction {
-    private static ConsoleView view = null;
-    private static ToolWindow window = null;
+    //private static ConsoleView view = null;
+    //private static ToolWindow window = null;
     private final static String GITCHECK_BAT = "./gitCheck.sh";
 
     @SuppressWarnings("UnstableApiUsage")
     @Override
     public void actionPerformed(@NotNull final AnActionEvent event) {
         try {
-            String title = "GitDeployPlugin";
             Project project = event.getProject();
 
             VirtualFile vFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
             if(vFile == null) {
-                showMessage("Please pick up a valid module!", title, NotificationType.ERROR);
+                showMessage("Please pick up a valid module!", "Error", NotificationType.ERROR);
                 return;
             }
             String fileName = vFile != null ? vFile.getName() : null;
@@ -70,11 +71,19 @@ public class MenuAction extends AnAction {
 
             // https://stackoverflow.com/questions/51972122/intellij-plugin-development-print-in-console-window
             // https://intellij-support.jetbrains.com/hc/en-us/community/posts/206756385-How-to-make-a-simple-console-output
-            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(title);
+            String title = new File(FileHandlerUtils.getRootProjectPath(modulePath)).getName();
+            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("GitDeployPlugin");
+            toolWindow.show();
+            toolWindow.activate(null);
+
             ConsoleView consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
-            Content content = toolWindow.getContentManager().getFactory().createContent(consoleView.getComponent(), title, false);
-            toolWindow.getContentManager().addContent(content);
-            consoleView.print("Hello from MyPlugin!", ConsoleViewContentType.NORMAL_OUTPUT);
+            Content content = toolWindow.getContentManager().findContent(title);
+            if(content == null) {
+                content = toolWindow.getContentManager().getFactory().createContent(consoleView.getComponent(), title, false);
+                toolWindow.getContentManager().addContent(content);
+            }
+            //consoleView.clear();
+            consoleView.print("Hello from MyPlugin!"+new Date().toString(), ConsoleViewContentType.NORMAL_OUTPUT);
 
             /*TerminalView terminalView = TerminalView.getInstance(project);
             ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID);

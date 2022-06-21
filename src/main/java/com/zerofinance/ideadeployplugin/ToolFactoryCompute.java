@@ -42,9 +42,9 @@ public class ToolFactoryCompute implements ToolWindowFactory {
         myToolWindow = toolWindow;
 
         // 将显示面板添加到显示区 2017/3/18 19:57
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-        Content content = contentFactory.createContent(mPanel, "Control", false);
-        toolWindow.getContentManager().addContent(content);
+        //ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+        //Content content = contentFactory.createContent(mPanel, "GitDeployPlugin", false);
+        //toolWindow.getContentManager().addContent(content);
 
         // 禁止编辑 2017/3/18 19:57
         txtContent.setEditable(false);
