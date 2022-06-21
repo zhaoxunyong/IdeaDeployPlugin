@@ -1,5 +1,6 @@
 package com.zerofinance.ideadeployplugin.utils;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.ui.ConsoleView;
@@ -9,15 +10,23 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.InputValidator;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.NlsSafe;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.terminal.JBTerminalWidget;
 import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
 import com.zerofinance.ideadeployplugin.exception.DeployPluginException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.plugins.terminal.ShellTerminalWidget;
+import org.jetbrains.plugins.terminal.TerminalToolWindowFactory;
+import org.jetbrains.plugins.terminal.TerminalView;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +47,9 @@ import java.util.List;
 @SuppressWarnings("restriction")
 public final class DeployPluginHandler {
     private Project project;
-    
+
+    private String modulePath;
+
     private final static String CHANGEVERSION_BAT = "./changeVersion.sh";
     private final static String RELEASE_BAT = "./release.sh";
     private final static String NEWBRANCH_BAT = "./newBranch.sh";
@@ -53,16 +64,17 @@ public final class DeployPluginHandler {
     /**
      * 
      */
-    public DeployPluginHandler(Project project) {
+    public DeployPluginHandler(Project project, String modulePath) {
         this.project = project;
+        this.modulePath = modulePath;
     }
     
 
-    private boolean preCheck(String modulePath) throws Exception {
+    public boolean preCheck() throws Exception {
     	boolean isConfirm = true;
         ExecuteResult result = null;
         try {
-            result = this.gitCheck(modulePath);
+            result = this.gitCheck();
         } catch (Exception e) {
         	// Skipping check when the gitCheck.sh isn't existing
         	System.err.println(e);
@@ -72,7 +84,7 @@ public final class DeployPluginHandler {
         	throw new Exception(result.getResult());
         } else {
         	try {
-        		result = this.committedLogWarn(modulePath);
+        		result = this.committedLogWarn();
         	} catch (Exception e) {
         		System.err.println(e);
         	}
@@ -153,7 +165,7 @@ public final class DeployPluginHandler {
     	return 0;
     }
     
-    private ExecuteResult gitCheck(String modulePath) throws Exception {
+    private ExecuteResult gitCheck() throws Exception {
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
     	String cmdFile = FileHandlerUtils.processScript(rootProjectPath, GITCHECK_BAT);
 //    	String projectName = project.getLocation().toFile().getName();
@@ -163,7 +175,7 @@ public final class DeployPluginHandler {
         return executeResult;
     }
     
-    private ExecuteResult committedLogWarn(String modulePath) throws Exception {
+    private ExecuteResult committedLogWarn() throws Exception {
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
     	String cmdFile = FileHandlerUtils.processScript(rootProjectPath, COMMITED_LOGS_BAT);
 //    	String projectName = project.getLocation().toFile().getName();
@@ -316,7 +328,8 @@ public final class DeployPluginHandler {
          return "";
     }
 
-    public void changeVersion(String modulePath, String name) throws Exception {
+    public void changeVersion() throws Exception {
+        String name = "ChangeVersion";
         String cmdFile = FileHandlerUtils.processScript(modulePath, CHANGEVERSION_BAT);
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
 //        String cmdName = FilenameUtils.getName(cmdFile);
@@ -337,7 +350,8 @@ public final class DeployPluginHandler {
         }
     }
 
-    public void newBranch(String modulePath, String name) throws Exception {
+    public void newBranch() throws Exception {
+        String name = "NewBranch";
         String cmdFile = FileHandlerUtils.processScript(modulePath, NEWBRANCH_BAT);
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
 //        String cmdName = FilenameUtils.getName(cmdFile);
@@ -366,7 +380,8 @@ public final class DeployPluginHandler {
         }
     }
 
-    public void mybatisGen(String modulePath, String name) throws Exception {
+    public void mybatisGen() throws Exception {
+        String name = "MybatisGen";
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
 
         String cmdFile = FileHandlerUtils.processScript(modulePath, MYBATISGEN_BAT);
@@ -380,29 +395,8 @@ public final class DeployPluginHandler {
         }
     }
     
-	private List<String> getReleaseList(String modulePath) throws Exception {
-    	List<String> allReleases = Lists.newArrayList();
-        String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
-    	
-        String command = "git";
-        List<String> parameters = Lists.newArrayList("ls-remote");
-        ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
-        int code = executeResult.getCode();
-        String result = executeResult.getResult();
-        if(code == 0 && !"".equals(result)) {
-            String[] results = result.split("[\n|\r\n]");
-            for(String r : results) {
-                if(r.endsWith(".release") || r.endsWith(".hotfix")) {
-                    String version = StringUtils.substringAfterLast(r, "/");//.replace(".release", "").replace(".hotfix", "");
-                    allReleases.add(version);
-                }
-            }
-        }
-
-    	return allReleases;
-	}
-
-    public void release(String modulePath, String name) throws Exception {
+    public void release() throws Exception {
+        String name = "Release";
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
         
         boolean continute = true;
@@ -453,12 +447,13 @@ public final class DeployPluginHandler {
 
     private void runJob(CmdBuilder cmdBuilder) {
         try {
-            // https://stackoverflow.com/questions/51972122/intellij-plugin-development-print-in-console-window
-            // https://intellij-support.jetbrains.com/hc/en-us/community/posts/206756385-How-to-make-a-simple-console-output
             String rootProjectPath = cmdBuilder.getWorkHome();
             String command = cmdBuilder.getCommand();
-            List<String> params = cmdBuilder.getParams();
+            List<String> parameters = cmdBuilder.getParams();
             String title = new File(rootProjectPath).getName();
+            // https://stackoverflow.com/questions/51972122/intellij-plugin-development-print-in-console-window
+            // https://intellij-support.jetbrains.com/hc/en-us/community/posts/206756385-How-to-make-a-simple-console-output
+            /*
             ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(DeployPluginHelper.PLUGIN_ID);
             toolWindow.show();
             toolWindow.activate(null);
@@ -472,11 +467,16 @@ public final class DeployPluginHandler {
             //consoleView.clear();
             //consoleView.print("Hello from MyPlugin!"+new Date().toString(), ConsoleViewContentType.NORMAL_OUTPUT);
             //command = "./gradlew build";
-            ExecuteResult result = DeployPluginHelper.exec(consoleView, rootProjectPath, command, params, true);
+            ExecuteResult result = DeployPluginHelper.exec(consoleView, rootProjectPath, command, parameters, true);
             System.out.println("code="+result.getCode());
-            System.out.println("result="+result.getResult());
+            System.out.println("result="+result.getResult());*/
 
-            /*TerminalView terminalView = TerminalView.getInstance(project);
+            if (parameters != null && !parameters.isEmpty()) {
+                String params = Joiner.on(" ").join(parameters);
+                command += " " + params;
+            }
+
+            TerminalView terminalView = TerminalView.getInstance(project);
             ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID);
             if (window == null) {
                 return;
@@ -504,10 +504,36 @@ public final class DeployPluginHandler {
                     terminal.executeCommand(command);
                 }
 
-            }*/
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
+    }
+
+    private @Nullable Pair<Content, ShellTerminalWidget> getSuitableProcess(@NotNull Content content) {
+        JBTerminalWidget widget = TerminalView.getWidgetByContent(content);
+        /*if (!(widget instanceof ShellTerminalWidget)) {
+            return null;
+        }*/
+
+        ShellTerminalWidget shellTerminalWidget = (ShellTerminalWidget)widget;
+        if (!shellTerminalWidget.getTypedShellCommand().isEmpty() || shellTerminalWidget.hasRunningCommands()) {
+            return null;
+        }
+
+        /*String currentWorkingDirectory = TerminalWorkingDirectoryManager.getWorkingDirectory(shellTerminalWidget, null);
+        if (currentWorkingDirectory == null || !currentWorkingDirectory.equals(workingDirectory)) {
+            return null;
+        }*/
+
+        return new Pair<>(content, shellTerminalWidget);
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public void showMessage(String message, String title, NotificationType type) {
+        NotificationGroup notificationGroup = new NotificationGroup(title+"Group", NotificationDisplayType.BALLOON, true);
+        Notification notification = notificationGroup.createNotification(message, type);
+        Notifications.Bus.notify(notification);
     }
 }

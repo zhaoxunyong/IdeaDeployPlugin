@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.terminal.JBTerminalWidget;
@@ -26,7 +27,8 @@ public class MenuAction extends AnAction {
 
             VirtualFile vFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
             if(vFile == null) {
-                showMessage("Please pick up a valid module!", "Error", NotificationType.ERROR);
+                // showMessage("Please pick up a valid module!", "Error", NotificationType.ERROR);
+                Messages.showErrorDialog("Please pick up a valid module!", "Error");
                 return;
             }
             String fileName = vFile != null ? vFile.getName() : null;
@@ -34,12 +36,14 @@ public class MenuAction extends AnAction {
 
             String modulePath = vFile.getPath();
             System.out.println("modulePath--->"+modulePath);
-            DeployPluginHandler handler = new DeployPluginHandler(project);
-            handler.release(modulePath, "Release");
+            DeployPluginHandler handler = new DeployPluginHandler(project, modulePath);
+            if(handler.preCheck()) {
+                handler.release();
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
-            showMessage(e.getMessage(), "Error", NotificationType.ERROR);
+            Messages.showErrorDialog(e.getMessage(), "Error");
         }
     }
 
@@ -48,31 +52,5 @@ public class MenuAction extends AnAction {
         boolean visibility = event.getProject() != null;
         event.getPresentation().setEnabled(visibility);
         event.getPresentation().setVisible(visibility);
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    private void showMessage(String message, String title, NotificationType type) {
-        NotificationGroup notificationGroup = new NotificationGroup(title+"Group", NotificationDisplayType.BALLOON, true);
-        Notification notification = notificationGroup.createNotification(message, type);
-        Notifications.Bus.notify(notification);
-    }
-
-    private @Nullable Pair<Content, ShellTerminalWidget> getSuitableProcess(@NotNull Content content) {
-        JBTerminalWidget widget = TerminalView.getWidgetByContent(content);
-        /*if (!(widget instanceof ShellTerminalWidget)) {
-            return null;
-        }*/
-
-        ShellTerminalWidget shellTerminalWidget = (ShellTerminalWidget)widget;
-        if (!shellTerminalWidget.getTypedShellCommand().isEmpty() || shellTerminalWidget.hasRunningCommands()) {
-            return null;
-        }
-
-        /*String currentWorkingDirectory = TerminalWorkingDirectoryManager.getWorkingDirectory(shellTerminalWidget, null);
-        if (currentWorkingDirectory == null || !currentWorkingDirectory.equals(workingDirectory)) {
-            return null;
-        }*/
-
-        return new Pair<>(content, shellTerminalWidget);
     }
 }

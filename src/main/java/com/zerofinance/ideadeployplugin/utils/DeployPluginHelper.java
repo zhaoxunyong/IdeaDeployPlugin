@@ -178,13 +178,13 @@ public class DeployPluginHelper {
 
                 @Override
                 protected void processLine(String line, int level) {
-                    console.print(line, ConsoleViewContentType.NORMAL_OUTPUT);
+                    console.print(line+"\n", ConsoleViewContentType.NORMAL_OUTPUT);
                 }
             }, new LogOutputStream() {
 
                 @Override
                 protected void processLine(String line, int level) {
-                    console.print(line, ConsoleViewContentType.NORMAL_OUTPUT);
+                    console.print(line+"\n", ConsoleViewContentType.NORMAL_OUTPUT);
                 }
             }));
             
@@ -209,49 +209,5 @@ public class DeployPluginHelper {
             }
         }
         return executeResult;
-    }
-    
-    public static void main(String[] args) throws Exception {
-    	/*Process process = Runtime.getRuntime().exec(new String[]{"C:\\Program Files\\Git\\bin\\bash.exe","-c","whoami|grep dave"}); 
-    	StringBuffer cmdout = new StringBuffer(); 
-    	InputStream fis = process.getInputStream(); 
-        BufferedReader br = new BufferedReader(new InputStreamReader(fis)); 
-        String line = null; 
-        while ((line = br.readLine()) != null) { 
-            cmdout.append(line).append(System.getProperty("line.separator")); 
-        } 
-        System.out.println(cmdout);*/
-        
-        /*String myActualCommand = "whoami|grep dave"; 
-    	// able to execute arbitrary shell command sequence 
-    	CommandLine shellCommand = new CommandLine("bash").addArgument("-c"); 
-
-    	// set handleQuoting = false so our command is taken as it is 
-    	shellCommand.addArgument(myActualCommand, false); 
-
-    	Executor exec = new DefaultExecutor(); 
-    	// ... (configure the executor as you like, e.g. with watchdog and stream handler) 
-
-    	ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
-        PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream,errorStream);
-        exec.setStreamHandler(streamHandler);
-    	exec.execute(shellCommand); 
-    	String out = outputStream.toString("utf-8");
-        System.out.println(out);*/
-    	
-    	String workHome = "/Developer/workspace/config-server";
-    	
-    	String command = "git remote show origin|grep 1.18.2.hotfix | egrep '本地已过时|local out of date'";
-    	List<String> params = Lists.newArrayList("");
-        ExecuteResult executeResult = DeployPluginHelper.exec(true, null, workHome, command, params, false);
-    	
-
-//    	String command = "test.sh";
-//    	List<String> params = Lists.newArrayList("");
-//    	String output = DeployPluginHelper.exec(true, null, workHome, command, params, true);
-    	
-    	System.out.println(executeResult.getCode());
-    	System.out.println(executeResult.getResult());
     }
 }
