@@ -61,7 +61,7 @@ public final class CommandHandlerUtils {
     }
     
     private static String getRootUrl() {
-        return "http://gitlab.zerofinance.net/dave.zhao/deployPlugin/raw/master";
+        return GitDeployPluginSetting.getScriptURL();
     }
 
     private static String getParentCmdFile(String projectPath, String cmd) {
@@ -87,7 +87,6 @@ public final class CommandHandlerUtils {
     }
     
     public static String getGitHome() {
-        String gitHome = GitDeployPluginSetting.getGitHome();
         return GitDeployPluginSetting.getGitHome();
     }
 

@@ -26,13 +26,22 @@ public class GitDeployPluginSetting implements Configurable {
     private JButton button1;
     private JCheckBox needDebugCheckBox;
     private JCheckBox moreDetailsCheckBox;
+    private JTextField scriptURLField;
 
     private static final String GIT_HOME_KEY = "gitDeployPluginGitHomeKey";
+
+    private static final String SCRIPT_URL_KEY = "gitDeployPluginScriptURLKey";
     private static final String DEBUG_KEY = "gitDeployPluginDebugKey";
     private static final String MORE_DETAILS_KEY = "gitDeployPluginMoreDetailsKey";
 
     public GitDeployPluginSetting() {
         textField.setText(PropertiesComponent.getInstance().getValue(GIT_HOME_KEY));
+        String scriptURL = PropertiesComponent.getInstance().getValue(SCRIPT_URL_KEY);
+        if(StringUtils.isNotBlank(scriptURL)) {
+            scriptURLField.setText(scriptURL);
+        } else {
+            scriptURLField.setText("http://gitlab.zerofinance.net/dave.zhao/deployPlugin/raw/master");
+        }
         needDebugCheckBox.setSelected(isDebug());
         moreDetailsCheckBox.setSelected(isMoreDetails());
         button1.addActionListener(new ActionListener() {
@@ -50,7 +59,7 @@ public class GitDeployPluginSetting implements Configurable {
                 });
             }
         });
-        needDebugCheckBox.addActionListener(new ActionListener() {
+        /*needDebugCheckBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 needDebugCheckBox.setSelected(!isDebug());
@@ -61,7 +70,7 @@ public class GitDeployPluginSetting implements Configurable {
             public void actionPerformed(ActionEvent e) {
                 moreDetailsCheckBox.setSelected(!isMoreDetails());
             }
-        });
+        });*/
     }
 
     @Nls(capitalization = Nls.Capitalization.Title)
@@ -80,6 +89,7 @@ public class GitDeployPluginSetting implements Configurable {
     @Override
     public boolean isModified() {
         return !StringUtils.equals(textField.getText(),PropertiesComponent.getInstance().getValue(GIT_HOME_KEY))
+                || !StringUtils.equals(String.valueOf(scriptURLField.getText()),PropertiesComponent.getInstance().getValue(SCRIPT_URL_KEY))
                 || !StringUtils.equals(String.valueOf(needDebugCheckBox.isSelected()),PropertiesComponent.getInstance().getValue(DEBUG_KEY))
                 || !StringUtils.equals(String.valueOf(moreDetailsCheckBox.isSelected()),PropertiesComponent.getInstance().getValue(MORE_DETAILS_KEY));
     }
@@ -87,12 +97,17 @@ public class GitDeployPluginSetting implements Configurable {
     @Override
     public void apply() throws ConfigurationException {
         PropertiesComponent.getInstance().setValue(GIT_HOME_KEY, textField.getText());
+        PropertiesComponent.getInstance().setValue(SCRIPT_URL_KEY, scriptURLField.getText());
         PropertiesComponent.getInstance().setValue(DEBUG_KEY, String.valueOf(needDebugCheckBox.isSelected()));
         PropertiesComponent.getInstance().setValue(MORE_DETAILS_KEY, String.valueOf(moreDetailsCheckBox.isSelected()));
     }
 
     public static String getGitHome() {
         return PropertiesComponent.getInstance().getValue(GIT_HOME_KEY);
+    }
+
+    public static String getScriptURL() {
+        return PropertiesComponent.getInstance().getValue(SCRIPT_URL_KEY);
     }
 
     public static boolean isDebug() {
