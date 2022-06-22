@@ -11,9 +11,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SystemUtils;
 
-public final class CommandHandlerUtils {
+public final class CommandUtils {
     
-	private CommandHandlerUtils() {}
+	private CommandUtils() {}
     
 	public static String getRootProjectPath(String projectPath) {
 //        String projectPath = project.getLocation().toFile().getPath();
