@@ -1,19 +1,19 @@
-package com.zerofinance.ideadeployplugin.utils;
+package com.zerofinance.ideadeployplugin.tools;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import com.zerofinance.ideadeployplugin.setting.GitDeployPluginSetting;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
-public final class FileHandlerUtils {
+public final class CommandHandlerUtils {
     
-	private FileHandlerUtils() {}
+	private CommandHandlerUtils() {}
     
 	public static String getRootProjectPath(String projectPath) {
 //        String projectPath = project.getLocation().toFile().getPath();
@@ -87,7 +87,16 @@ public final class FileHandlerUtils {
     }
     
     public static String getGitHome() {
-        return "D:\\Developer\\Git";
+        String gitHome = GitDeployPluginSetting.getGitHome();
+        return GitDeployPluginSetting.getGitHome();
+    }
+
+    public static boolean isDebug() {
+        return GitDeployPluginSetting.isDebug();
+    }
+
+    public static boolean isMoreDetails() {
+        return GitDeployPluginSetting.isMoreDetails();
     }
 
     private static String getCmdFile(String projectPath, String cmd) throws IOException {

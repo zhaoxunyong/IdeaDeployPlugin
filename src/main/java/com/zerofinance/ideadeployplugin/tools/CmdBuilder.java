@@ -1,4 +1,4 @@
-package com.zerofinance.ideadeployplugin.utils;
+package com.zerofinance.ideadeployplugin.tools;
 
 import java.util.List;
 

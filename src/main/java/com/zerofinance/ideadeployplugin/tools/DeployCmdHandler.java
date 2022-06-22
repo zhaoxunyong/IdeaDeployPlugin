@@ -1,9 +1,8 @@
-package com.zerofinance.ideadeployplugin.utils;
+package com.zerofinance.ideadeployplugin.tools;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 
 import com.intellij.execution.ui.ConsoleView;
@@ -18,7 +17,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 
 /**
  * DeployPluginHelper
@@ -31,7 +29,7 @@ import com.google.common.collect.Lists;
  * @version 3.0
  * @since 1.0
  */
-public class DeployPluginHelper {
+public class DeployCmdHandler {
     public final static String PLUGIN_ID = "GitDeployPlugin";
 
 //    public static void success(Shell shell, String context){
@@ -106,7 +104,7 @@ public class DeployPluginHelper {
         CommandLine cmdLine = null;
         if(SystemUtils.IS_OS_WINDOWS) {
             // For windows
-            cmdLine = new CommandLine(FileHandlerUtils.getGitHome()+"\\bin\\bash.exe");
+            cmdLine = new CommandLine(CommandHandlerUtils.getGitHome()+"\\bin\\bash.exe");
             if(isBatchScript) {
                 // Batch script
                 if(StringUtils.isNotBlank(debugStr)) {

@@ -1,17 +1,13 @@
-package com.zerofinance.ideadeployplugin.utils;
+package com.zerofinance.ideadeployplugin.tools;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.intellij.execution.filters.TextConsoleBuilderFactory;
-import com.intellij.execution.ui.ConsoleView;
 import com.intellij.notification.*;
-import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.InputValidator;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.terminal.JBTerminalWidget;
@@ -67,6 +63,11 @@ public final class DeployPluginHandler {
     public DeployPluginHandler(Project project, String modulePath) {
         this.project = project;
         this.modulePath = modulePath;
+        String gitHome = CommandHandlerUtils.getGitHome();
+        if(StringUtils.isBlank(gitHome)) {
+            throw new DeployPluginException("Please configure Git Home Path from:\n" +
+                    "File -> Settings -> GitDeployPlugin");
+        }
         /*// Check terminal is a git-bash
         try {
             String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
@@ -176,22 +177,22 @@ public final class DeployPluginHandler {
     }
     
     private ExecuteResult gitCheck() throws Exception {
-        String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
-    	String cmdFile = FileHandlerUtils.processScript(rootProjectPath, GITCHECK_BAT);
+        String rootProjectPath = CommandHandlerUtils.getRootProjectPath(modulePath);
+    	String cmdFile = CommandHandlerUtils.processScript(rootProjectPath, GITCHECK_BAT);
 //    	String projectName = project.getLocation().toFile().getName();
 //    	String tempProjectFolder = FileHandlerUtils.getTempFolder()+"/"+projectName;
     	List<String> params = Lists.newArrayList();
-    	ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, cmdFile, params, true);
+    	ExecuteResult executeResult = DeployCmdHandler.exec(rootProjectPath, cmdFile, params, true);
         return executeResult;
     }
     
     private ExecuteResult committedLogWarn() throws Exception {
-        String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
-    	String cmdFile = FileHandlerUtils.processScript(rootProjectPath, COMMITED_LOGS_BAT);
+        String rootProjectPath = CommandHandlerUtils.getRootProjectPath(modulePath);
+    	String cmdFile = CommandHandlerUtils.processScript(rootProjectPath, COMMITED_LOGS_BAT);
 //    	String projectName = project.getLocation().toFile().getName();
 //    	String tempProjectFolder = FileHandlerUtils.getTempFolder()+"/"+projectName;
     	List<String> params = Lists.newArrayList();
-    	ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, cmdFile, params, true);
+    	ExecuteResult executeResult = DeployCmdHandler.exec(rootProjectPath, cmdFile, params, true);
         return executeResult;
     }
     
@@ -200,7 +201,7 @@ public final class DeployPluginHandler {
         List<String> parameters = Lists.newArrayList("ls-remote");
 //    	String command = "git ls-remote | grep -v '\\^{}' |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i '(release|hotfix)$'";
 //      List<String> parameters = Lists.newArrayList();
-        ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
+        ExecuteResult executeResult = DeployCmdHandler.exec(rootProjectPath, command, parameters, false);
         // String result = CmdExecutor.exec(rootProjectPath, command, parameters);
 //	        System.out.println("result----->"+result);
         int code = executeResult.getCode();
@@ -340,8 +341,8 @@ public final class DeployPluginHandler {
 
     public void changeVersion() throws Exception {
         String name = "ChangeVersion";
-        String cmdFile = FileHandlerUtils.processScript(modulePath, CHANGEVERSION_BAT);
-        String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
+        String cmdFile = CommandHandlerUtils.processScript(modulePath, CHANGEVERSION_BAT);
+        String rootProjectPath = CommandHandlerUtils.getRootProjectPath(modulePath);
 //        String cmdName = FilenameUtils.getName(cmdFile);
         String pomVersion = getMavenPomVersion(rootProjectPath);
         String bPomVersion = StringUtils.substringBeforeLast(pomVersion, ".");
@@ -362,8 +363,8 @@ public final class DeployPluginHandler {
 
     public void newBranch() throws Exception {
         String name = "NewBranch";
-        String cmdFile = FileHandlerUtils.processScript(modulePath, NEWBRANCH_BAT);
-        String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
+        String cmdFile = CommandHandlerUtils.processScript(modulePath, NEWBRANCH_BAT);
+        String rootProjectPath = CommandHandlerUtils.getRootProjectPath(modulePath);
 //        String cmdName = FilenameUtils.getName(cmdFile);
         String pomVersion = getMavenPomVersion(rootProjectPath);
         // 1.5.6->1.6.x
@@ -392,9 +393,9 @@ public final class DeployPluginHandler {
 
     public void mybatisGen() throws Exception {
         String name = "MybatisGen";
-        String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
+        String rootProjectPath = CommandHandlerUtils.getRootProjectPath(modulePath);
 
-        String cmdFile = FileHandlerUtils.processScript(modulePath, MYBATISGEN_BAT);
+        String cmdFile = CommandHandlerUtils.processScript(modulePath, MYBATISGEN_BAT);
 //        String cmdName = FilenameUtils.getName(cmdFile);
         // Using "projectPath" instead of "rootProjectPath"
         CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, Lists.newArrayList());
@@ -407,7 +408,7 @@ public final class DeployPluginHandler {
     
     public void release() throws Exception {
         String name = "Release";
-        String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
+        String rootProjectPath = CommandHandlerUtils.getRootProjectPath(modulePath);
         
         boolean continute = true;
         try {
@@ -430,7 +431,7 @@ public final class DeployPluginHandler {
             if(!"release".equals(releaseType) && !"hotfix".equals(releaseType)) {
                 throw new DeployPluginException("Please pick up either release or hotfix option.");
             }
-            String cmdFile = FileHandlerUtils.processScript(rootProjectPath, RELEASE_BAT);
+            String cmdFile = CommandHandlerUtils.processScript(rootProjectPath, RELEASE_BAT);
 //		            String cmdName = FilenameUtils.getName(cmdFile);
 
             String pomVersion = getMavenPomVersion(rootProjectPath);
@@ -481,11 +482,14 @@ public final class DeployPluginHandler {
             System.out.println("code="+result.getCode());
             System.out.println("result="+result.getResult());*/
 
+            String debug = CommandHandlerUtils.isDebug()? "-x" : "";
+            String moreDetails = CommandHandlerUtils.isMoreDetails()? "-v" : "";
+            command = "bash " + debug +" " +moreDetails + " " + command;
             if (parameters != null && !parameters.isEmpty()) {
                 String params = Joiner.on(" ").join(parameters);
                 command += " " + params;
             }
-
+            //System.out.println("command--->"+command);
             TerminalView terminalView = TerminalView.getInstance(project);
             ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID);
             if (window == null) {

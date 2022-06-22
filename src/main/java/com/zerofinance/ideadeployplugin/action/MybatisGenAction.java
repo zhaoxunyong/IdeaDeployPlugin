@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.zerofinance.ideadeployplugin.utils.DeployPluginHandler;
+import com.zerofinance.ideadeployplugin.tools.DeployPluginHandler;
 import org.jetbrains.annotations.NotNull;
 
 public class MybatisGenAction extends AnAction {
@@ -24,7 +24,7 @@ public class MybatisGenAction extends AnAction {
             }
             String modulePath = vFile.getPath();
             DeployPluginHandler handler = new DeployPluginHandler(project, modulePath);
-            handler.release();
+            handler.mybatisGen();
 
         } catch (Exception e) {
             e.printStackTrace();
