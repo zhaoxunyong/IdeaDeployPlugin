@@ -382,8 +382,7 @@ public final class DeployPluginHandler {
 //            String rootProjectPath = getParentProject(projectPath, cmd);
             String desc = desc(name);
             if(StringUtils.isNotBlank(desc)) {
-//            	params = params + " '" + desc +"'";
-            	parameters.add(desc);
+            	parameters.add("\""+desc+"\"");
                 CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
                 runJob(cmdBuilder);
 
