@@ -31,6 +31,7 @@
                     icon="AllIcons.General.Modified"
                     anchor="bottom"
                     factoryClass="com.zerofinance.ideadeployplugin.ToolFactoryCompute"></toolWindow>-->
+        <applicationConfigurable instance="com.zerofinance.ideadeployplugin.setting.PropertiesComponentApplicationSetting" dynamic="true"/>
     </extensions>
 
     <actions>
