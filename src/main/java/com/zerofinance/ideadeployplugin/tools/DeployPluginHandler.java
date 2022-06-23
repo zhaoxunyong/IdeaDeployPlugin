@@ -118,30 +118,8 @@ public final class DeployPluginHandler {
     /**
      * http://www.vogella.com/tutorials/EclipseDialogs/article.html
      */
-    private String input(String name, String defaultValue, String example) throws Exception {
-        String input = Messages.showInputDialog("Enter parameter, example: " + example, "Enter parameter", null, defaultValue, new InputValidator() {
-
-            @Override
-            public boolean checkInput(@NlsSafe String inputString) {
-                /*if(StringUtils.isBlank(inputString)) {
-                    throw new DeployPluginException("Parameter must not be empty.");
-                }*/
-                return true;
-            }
-
-            @Override
-            public boolean canClose(@NlsSafe String inputString) {
-                return true;
-            }
-        });
-        if(StringUtils.isBlank(input)) {
-            throw new DeployPluginException("Must not be empty.");
-        }
-        return input;
-    }
-    
-    private String desc(String name) throws Exception {
-        String input = Messages.showInputDialog("Add a message for git description", "Description", null, "", new InputValidator() {
+    private String input(String message, String title, String defaultValue) throws Exception {
+        String input = Messages.showInputDialog(message, title, null, defaultValue, new InputValidator() {
 
             @Override
             public boolean checkInput(@NlsSafe String inputString) {
@@ -154,11 +132,19 @@ public final class DeployPluginHandler {
             }
         });
         if(StringUtils.isBlank(input)) {
-            throw new DeployPluginException("Must not be empty.");
+            throw new DeployPluginException(message);
         }
         return input;
     }
-    
+
+    private String desc() throws Exception {
+        String input = Messages.showInputDialog("Adding a message for git description", "Description", null);
+        if(StringUtils.isBlank(input)) {
+            throw new DeployPluginException("Please input a available description.");
+        }
+        return input;
+    }
+
     private int compareVersion(String version1, String version2) {
     	if(version1==null || version2==null)
     		return 0;
@@ -351,19 +337,17 @@ public final class DeployPluginHandler {
         aPomVersion = String.valueOf(Integer.parseInt(aPomVersion)+1);
         String defaultValue = bPomVersion+"."+aPomVersion+"-SNAPSHOT";
         List<String> parameters = Lists.newArrayList();
-        String params = input(name, defaultValue, "newVersion");
-        if(StringUtils.isNotBlank(params)) {
-            parameters.add(params);
-            
-            if(parameters!=null && !parameters.isEmpty()) {
-                CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
-                runJob(cmdBuilder);
-            }
+
+        String version = input("Please input a available version", "Input a version", defaultValue);
+        parameters.add(version);
+
+        if(parameters!=null && !parameters.isEmpty()) {
+            CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
+            runJob(cmdBuilder);
         }
     }
 
     public void newBranch() throws Exception {
-        String name = "NewBranch";
         String cmdFile = CommandUtils.processScript(modulePath, NEWBRANCH_BAT);
         String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
 //        String cmdName = FilenameUtils.getName(cmdFile);
@@ -375,19 +359,16 @@ public final class DeployPluginHandler {
         a2PomVersion = String.valueOf(Integer.parseInt(a2PomVersion)+1);
         String defaultValue = a1PomVersion+"."+a2PomVersion+".x"; // 1.6.x
         List<String> parameters = Lists.newArrayList();
-        String params = input(name, defaultValue, "newBranch");
-        parameters.add(params);
+        String newBranch = input("Please input a available branch name", "Input a branch name", defaultValue);
+        parameters.add(newBranch);
         
         if(parameters!=null && !parameters.isEmpty()) {
 //            String projectPath = project.getLocation().toFile().getPath();
 //            String rootProjectPath = getParentProject(projectPath, cmd);
-            String desc = desc(name);
-            if(StringUtils.isNotBlank(desc)) {
-            	parameters.add("\""+desc+"\"");
-                CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
-                runJob(cmdBuilder);
-
-            }
+            String desc = desc();
+            parameters.add("\""+desc+"\"");
+            CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
+            runJob(cmdBuilder);
         }
     }
 
@@ -399,7 +380,7 @@ public final class DeployPluginHandler {
 //        String cmdName = FilenameUtils.getName(cmdFile);
         // Using "projectPath" instead of "rootProjectPath"
         CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, Lists.newArrayList());
-        boolean isConfirm = Messages.showYesNoDialog(name + " Mybatis Gen Confirm?", "Mybatis Gen Confirm?", null) == 0;
+        boolean isConfirm = Messages.showYesNoDialog("Are you sure you want to execute \"mybatis-generator-maven-plugin\"?", "Are you sure?", null) == 0;
         // boolean isConfirm = MessageDialog.openConfirm(shell, "Mybatis Gen Confirm?", project.getName() + " Mybatis Gen Confirm?");
         if(isConfirm) {
             runJob(cmdBuilder);
@@ -437,7 +418,7 @@ public final class DeployPluginHandler {
             String pomVersion = getMavenPomVersion(rootProjectPath);
             String defaultValue = pomVersion.replace("-SNAPSHOT", "")+"."+releaseType;
 
-            String inputedVersion = input(name, defaultValue, "BranchVersion").trim();
+            String inputedVersion = input("Please input a available branch name", "Input a branch name", defaultValue).trim();
             if( inputedVersion.indexOf(" ") != -1) {
                 throw new Exception("The version is invalid.");
             }
@@ -446,12 +427,10 @@ public final class DeployPluginHandler {
 //		                String projectPath = project.getLocation().toFile().getPath();
 //		                String rootProjectPath = getParentProject(projectPath, cmd);
 
-                String desc = desc(name);
-                if(StringUtils.isNotBlank(desc)) {
-                    List<String> parameters = Lists.newArrayList(inputedVersion, dateString, "false", "\""+desc+"\"");
-                    CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
-                    runJob(cmdBuilder);
-                }
+                String desc = desc();
+                List<String> parameters = Lists.newArrayList(inputedVersion, dateString, "false", "\""+desc+"\"");
+                CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
+                runJob(cmdBuilder);
             }
         }
     }
@@ -510,7 +489,7 @@ public final class DeployPluginHandler {
                 Pair<Content, ShellTerminalWidget> pair = getSuitableProcess(content);
                 if(pair == null) {
                     //Messages.showInfoMessage("A terminal has been running", "Warnning");
-                    showMessage("A terminal has been running", title, NotificationType.ERROR);
+                    MessagesUtils.showMessage(project, "A terminal has been running", NotificationType.ERROR);
                 } else {
                     pair.first.setDisplayName(title);
                     contentManager.setSelectedContent(pair.first);
@@ -542,12 +521,5 @@ public final class DeployPluginHandler {
         }*/
 
         return new Pair<>(content, shellTerminalWidget);
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    public void showMessage(String message, String title, NotificationType type) {
-        NotificationGroup notificationGroup = new NotificationGroup(title+"Group", NotificationDisplayType.BALLOON, true);
-        Notification notification = notificationGroup.createNotification(message, type);
-        Notifications.Bus.notify(notification);
     }
 }

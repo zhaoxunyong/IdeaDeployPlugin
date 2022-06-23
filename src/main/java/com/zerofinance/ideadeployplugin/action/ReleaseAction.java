@@ -1,20 +1,24 @@
 package com.zerofinance.ideadeployplugin.action;
 
+import com.intellij.notification.NotificationGroupManager;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.GotItMessage;
 import com.zerofinance.ideadeployplugin.tools.DeployPluginHandler;
+import com.zerofinance.ideadeployplugin.tools.MessagesUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class ReleaseAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent event) {
+        Project project = event.getProject();
         try {
-            Project project = event.getProject();
 
             VirtualFile vFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
             if(vFile == null) {
@@ -30,7 +34,8 @@ public class ReleaseAction extends AnAction {
 
         } catch (Exception e) {
             e.printStackTrace();
-            Messages.showErrorDialog(e.getMessage(), "Error");
+//            Messages.showErrorDialog(e.getMessage(), "Error");
+            MessagesUtils.showMessage(project, e.getMessage(), NotificationType.ERROR);
         }
     }
 
