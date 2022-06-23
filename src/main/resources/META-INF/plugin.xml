@@ -27,10 +27,10 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
-        <!--<toolWindow id="GitDeployPlugin"
-                    icon="AllIcons.General.Modified"
+        <toolWindow id="GitDeployPlugin"
+                    icon="AllIcons.Actions.ChangeView"
                     anchor="bottom"
-                    factoryClass="com.zerofinance.ideadeployplugin.ToolFactoryCompute"></toolWindow>-->
+                    factoryClass="com.zerofinance.ideadeployplugin.GitDeployPlugin"></toolWindow>
         <notificationGroup id="Custom Notification Group"
                            displayType="BALLOON" />
         <applicationConfigurable instance="com.zerofinance.ideadeployplugin.setting.GitDeployPluginSetting" dynamic="true"/>

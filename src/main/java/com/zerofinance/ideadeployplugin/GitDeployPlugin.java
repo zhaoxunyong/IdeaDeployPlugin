@@ -9,6 +9,7 @@ import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
+import com.zerofinance.ideadeployplugin.tools.DeployCmdExecuter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -23,7 +24,7 @@ import java.awt.event.MouseListener;
 /**
  * Tool windows control.控制文本显示 2017/3/18 19:58
  */
-public class GitDeployPluginConsole implements ToolWindowFactory {
+public class GitDeployPlugin implements ToolWindowFactory {
 
     private ToolWindow myToolWindow;
     private JPanel mPanel;
@@ -42,9 +43,9 @@ public class GitDeployPluginConsole implements ToolWindowFactory {
         myToolWindow = toolWindow;
 
         // 将显示面板添加到显示区 2017/3/18 19:57
-        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-        Content content = contentFactory.createContent(mPanel, "DeployPlugin", false);
-        toolWindow.getContentManager().addContent(content);
+//        ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+//        Content content = contentFactory.createContent(mPanel, DeployCmdExecuter.PLUGIN_TITLE, false);
+//        toolWindow.getContentManager().addContent(content);
 
         // 禁止编辑 2017/3/18 19:57
         txtContent.setEditable(false);
