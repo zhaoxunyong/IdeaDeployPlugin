@@ -9,9 +9,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.GotItMessage;
+import com.zerofinance.ideadeployplugin.tools.CommandUtils;
 import com.zerofinance.ideadeployplugin.tools.DeployPluginHandler;
 import com.zerofinance.ideadeployplugin.tools.MessagesUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
 
 public class ReleaseAction extends AnAction {
 
@@ -28,6 +31,10 @@ public class ReleaseAction extends AnAction {
                 return;
             }
             String modulePath = vFile.getPath();
+            String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
+            String moduleName = new File(rootProjectPath).getName();
+            MessagesUtils.showMessage(project, "\""+moduleName+"\" was selected!", "Information:", NotificationType.INFORMATION);
+
             DeployPluginHandler handler = new DeployPluginHandler(project, modulePath);
             if(handler.preCheck()) {
                 handler.release();

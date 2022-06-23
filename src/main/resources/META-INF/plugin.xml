@@ -19,6 +19,12 @@
     <li>2. Choose the option you want to execute.</li>
     ]]></description>
 
+    <change-notes><![CDATA[
+     <li>1.0.1 : New: Adding a confirm: which module you want to pick up.</li>
+     <li>1.0.0 : init </li>
+    ]]>
+    </change-notes>
+
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
