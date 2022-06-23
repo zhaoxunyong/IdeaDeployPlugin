@@ -27,12 +27,15 @@ public class GitDeployPluginSetting implements Configurable {
     private JCheckBox needDebugCheckBox;
     private JCheckBox moreDetailsCheckBox;
     private JTextField scriptURLField;
+    private JCheckBox runningInTerminalCheckBox;
 
     private static final String GIT_HOME_KEY = "gitDeployPluginGitHomeKey";
 
     private static final String SCRIPT_URL_KEY = "gitDeployPluginScriptURLKey";
     private static final String DEBUG_KEY = "gitDeployPluginDebugKey";
     private static final String MORE_DETAILS_KEY = "gitDeployPluginMoreDetailsKey";
+
+    private static final String RUNNING_IN_TERMINAL_KEY = "gitDeployPluginRunningInTerminalKey";
 
     public GitDeployPluginSetting() {
         textField.setText(PropertiesComponent.getInstance().getValue(GIT_HOME_KEY));
@@ -44,6 +47,7 @@ public class GitDeployPluginSetting implements Configurable {
         }
         needDebugCheckBox.setSelected(isDebug());
         moreDetailsCheckBox.setSelected(isMoreDetails());
+        runningInTerminalCheckBox.setSelected(isRunnInTerminal());
         button1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -59,18 +63,6 @@ public class GitDeployPluginSetting implements Configurable {
                 });
             }
         });
-        /*needDebugCheckBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                needDebugCheckBox.setSelected(!isDebug());
-            }
-        });
-        moreDetailsCheckBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moreDetailsCheckBox.setSelected(!isMoreDetails());
-            }
-        });*/
     }
 
     @Nls(capitalization = Nls.Capitalization.Title)
@@ -91,7 +83,8 @@ public class GitDeployPluginSetting implements Configurable {
         return !StringUtils.equals(textField.getText(),PropertiesComponent.getInstance().getValue(GIT_HOME_KEY))
                 || !StringUtils.equals(String.valueOf(scriptURLField.getText()),PropertiesComponent.getInstance().getValue(SCRIPT_URL_KEY))
                 || !StringUtils.equals(String.valueOf(needDebugCheckBox.isSelected()),PropertiesComponent.getInstance().getValue(DEBUG_KEY))
-                || !StringUtils.equals(String.valueOf(moreDetailsCheckBox.isSelected()),PropertiesComponent.getInstance().getValue(MORE_DETAILS_KEY));
+                || !StringUtils.equals(String.valueOf(moreDetailsCheckBox.isSelected()),PropertiesComponent.getInstance().getValue(MORE_DETAILS_KEY))
+                || !StringUtils.equals(String.valueOf(runningInTerminalCheckBox.isSelected()),PropertiesComponent.getInstance().getValue(RUNNING_IN_TERMINAL_KEY));
     }
 
     @Override
@@ -100,6 +93,7 @@ public class GitDeployPluginSetting implements Configurable {
         PropertiesComponent.getInstance().setValue(SCRIPT_URL_KEY, scriptURLField.getText());
         PropertiesComponent.getInstance().setValue(DEBUG_KEY, String.valueOf(needDebugCheckBox.isSelected()));
         PropertiesComponent.getInstance().setValue(MORE_DETAILS_KEY, String.valueOf(moreDetailsCheckBox.isSelected()));
+        PropertiesComponent.getInstance().setValue(RUNNING_IN_TERMINAL_KEY, String.valueOf(runningInTerminalCheckBox.isSelected()));
     }
 
     public static String getGitHome() {
@@ -122,5 +116,12 @@ public class GitDeployPluginSetting implements Configurable {
             return false;
         }
         return Boolean.valueOf(PropertiesComponent.getInstance().getValue(MORE_DETAILS_KEY));
+    }
+
+    public static boolean isRunnInTerminal() {
+        if(StringUtils.isBlank(PropertiesComponent.getInstance().getValue(RUNNING_IN_TERMINAL_KEY))) {
+            return false;
+        }
+        return Boolean.valueOf(PropertiesComponent.getInstance().getValue(RUNNING_IN_TERMINAL_KEY));
     }
 }

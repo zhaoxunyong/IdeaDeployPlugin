@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.zerofinance.ideadeployplugin.setting.GitDeployPluginSetting;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -95,13 +96,13 @@ public class DeployCmdExecuter {
      * @throws InterruptedException
      */
     public static ExecuteResult exec(final ConsoleView console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
-        String debug = CommandUtils.isDebug() ? "-x" : "";
-        String moreDetails = CommandUtils.isMoreDetails() ? "-v" : "";
+        String debug = GitDeployPluginSetting.isDebug() ? "-x" : "";
+        String moreDetails = GitDeployPluginSetting.isMoreDetails() ? "-v" : "";
 
         CommandLine cmdLine = null;
         if(SystemUtils.IS_OS_WINDOWS) {
             // For windows
-            cmdLine = new CommandLine(CommandUtils.getGitHome()+"\\bin\\bash.exe");
+            cmdLine = new CommandLine(GitDeployPluginSetting.getGitHome()+"\\bin\\bash.exe");
             if(isBatchScript) {
                 // Batch script
                 if(StringUtils.isNotBlank(debug)) {

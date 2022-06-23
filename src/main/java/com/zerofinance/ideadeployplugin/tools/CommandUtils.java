@@ -86,17 +86,17 @@ public final class CommandUtils {
     	return file.getPath();
     }
     
-    public static String getGitHome() {
-        return GitDeployPluginSetting.getGitHome();
-    }
-
-    public static boolean isDebug() {
-        return GitDeployPluginSetting.isDebug();
-    }
-
-    public static boolean isMoreDetails() {
-        return GitDeployPluginSetting.isMoreDetails();
-    }
+//    public static String getGitHome() {
+//        return GitDeployPluginSetting.getGitHome();
+//    }
+//
+//    public static boolean isDebug() {
+//        return GitDeployPluginSetting.isDebug();
+//    }
+//
+//    public static boolean isMoreDetails() {
+//        return GitDeployPluginSetting.isMoreDetails();
+//    }
 
     private static String getCmdFile(String projectPath, String cmd) throws IOException {
         String allCmd = cmd.replace(".sh", "All.sh");

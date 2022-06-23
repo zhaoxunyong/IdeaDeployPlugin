@@ -17,6 +17,7 @@ import com.intellij.terminal.JBTerminalWidget;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.zerofinance.ideadeployplugin.exception.DeployPluginException;
+import com.zerofinance.ideadeployplugin.setting.GitDeployPluginSetting;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -35,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -68,7 +70,7 @@ public final class DeployPluginHandler {
     public DeployPluginHandler(Project project, String modulePath) {
         this.project = project;
         this.modulePath = modulePath;
-        String gitHome = CommandUtils.getGitHome();
+        String gitHome = GitDeployPluginSetting.getGitHome();
         if (SystemUtils.IS_OS_WINDOWS && StringUtils.isBlank(gitHome)) {
             throw new DeployPluginException("Please configure Git Home Path from:\n" +
                     "File -> Settings -> GitDeployPlugin");
@@ -442,85 +444,101 @@ public final class DeployPluginHandler {
     private void runJob(CmdBuilder cmdBuilder) {
         try {
             String rootProjectPath = cmdBuilder.getWorkHome();
-            String command = cmdBuilder.getCommand();
-            List<String> parameters = cmdBuilder.getParams();
 //            String title = new File(rootProjectPath).getName();
-            // https://stackoverflow.com/questions/51972122/intellij-plugin-development-print-in-console-window
-            // https://intellij-support.jetbrains.com/hc/en-us/community/posts/206756385-How-to-make-a-simple-console-output
-            // https://vimsky.com/examples/detail/java-class-com.intellij.execution.impl.ConsoleViewImpl.html
-            ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(DeployCmdExecuter.PLUGIN_ID);
+            String title = DeployCmdExecuter.PLUGIN_TITLE;
+            if(GitDeployPluginSetting.isRunnInTerminal()) {
+                String command = cmdBuilder.getCommand();
+                List<String> parameters = cmdBuilder.getParams();
+                //Working via terminal
+                String debug = GitDeployPluginSetting.isDebug() ? "-x" : "";
+                String moreDetails = GitDeployPluginSetting.isMoreDetails() ? "-v" : "";
+                command = "bash " + debug + " " + moreDetails + " " + command;
+                if (parameters != null && !parameters.isEmpty()) {
+                    String params = Joiner.on(" ").join(parameters);
+                    command += " " + params;
+                }
+                //System.out.println("command--->"+command);
+                TerminalView terminalView = TerminalView.getInstance(project);
+                ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID);
+                if (window == null) {
+                    return;
+                }
+                window.activate(null);
+                ContentManager contentManager = window.getContentManager();
+                Content content = contentManager.findContent(title);
+
+                ShellTerminalWidget terminal = null;
+                if (content == null) {
+                    terminal = terminalView.createLocalShellWidget(project.getBasePath(), title);
+                    terminal.executeCommand(command);
+                } else {
+                    Pair<Content, ShellTerminalWidget> pair = getSuitableProcess(content);
+                    if (pair == null) {
+                        //Messages.showInfoMessage("A terminal has been running", "Warnning");
+                        MessagesUtils.showMessage(project, "A terminal has been running", "Error:", NotificationType.ERROR);
+                    } else {
+                        pair.first.setDisplayName(title);
+                        contentManager.setSelectedContent(pair.first);
+                        terminal = pair.second;
+                        terminal.executeCommand(command);
+                    }
+                }
+                final ShellTerminalWidget finalTerminal = terminal;
+                        new Thread(()->{
+                    try {
+                        TimeUnit.SECONDS.sleep(1L);
+                        while(finalTerminal.hasRunningCommands()) {
+                            TimeUnit.MILLISECONDS.sleep(100L);
+                        }
+                        MessagesUtils.showMessage(project, "Git Deploy Done, please check if Terminal has any error appeared!", "Done", NotificationType.INFORMATION);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).start();
+            } else {
+                // https://stackoverflow.com/questions/51972122/intellij-plugin-development-print-in-console-window
+                // https://intellij-support.jetbrains.com/hc/en-us/community/posts/206756385-How-to-make-a-simple-console-output
+                // https://vimsky.com/examples/detail/java-class-com.intellij.execution.impl.ConsoleViewImpl.html
+                ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(DeployCmdExecuter.PLUGIN_ID);
 //            toolWindow.show();
 //            toolWindow.activate(null);
-            toolWindow.setAvailable(true,null);
-            toolWindow.show(null);
+                toolWindow.setAvailable(true,null);
+                toolWindow.show(null);
 
-            ConsoleView consoleView = null;
-            Content content = toolWindow.getContentManager().findContent(DeployCmdExecuter.PLUGIN_TITLE);
-            if(content == null) {
-                consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
-                content = toolWindow.getContentManager().getFactory().createContent(consoleView.getComponent(), DeployCmdExecuter.PLUGIN_TITLE, false);
-                toolWindow.getContentManager().addContent(content);
-            } else {
-                final JComponent component = content.getComponent();
-                if (component instanceof ConsoleViewImpl) {
-                    consoleView = (ConsoleViewImpl)component;
-                    consoleView.clear();
-//                    ((ConsoleViewImpl)component).print(message, ConsoleViewContentType.ERROR_OUTPUT);
-                }
-            }
-            ConsoleView console = consoleView;
-                    //consoleView.clear();
-            //consoleView.print("Hello from MyPlugin!"+new Date().toString(), ConsoleViewContentType.NORMAL_OUTPUT);
-            //command = "./gradlew build";
-            new Thread(()-> {
-                ExecuteResult result = null;
-                try {
-                    result = DeployCmdExecuter.exec(console, rootProjectPath, command, parameters, true);
-                    if (result != null && result.getCode() != 0) {
-                        MessagesUtils.showMessage(project, result.getResult(), "Error", NotificationType.ERROR);
-                    } else {
-                        MessagesUtils.showMessage(project, "Git Deploy Ok!", "Done", NotificationType.INFORMATION);
-                    }
-                } catch (Exception e) {
-                    MessagesUtils.showMessage(project, e.getMessage(), "Error", NotificationType.ERROR);
-                }
-            }).start();
-
-            /*
-            //Working via terminal
-            String debug = CommandUtils.isDebug() ? "-x" : "";
-            String moreDetails = CommandUtils.isMoreDetails() ? "-v" : "";
-            command = "bash " + debug + " " + moreDetails + " " + command;
-            if (parameters != null && !parameters.isEmpty()) {
-                String params = Joiner.on(" ").join(parameters);
-                command += " " + params;
-            }
-            //System.out.println("command--->"+command);
-            TerminalView terminalView = TerminalView.getInstance(project);
-            ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID);
-            if (window == null) {
-                return;
-            }
-            window.activate(null);
-            ContentManager contentManager = window.getContentManager();
-            Content content = contentManager.findContent(title);
-
-            if (content == null) {
-                ShellTerminalWidget terminal = terminalView.createLocalShellWidget(project.getBasePath(), title);
-                terminal.executeCommand(command);
-            } else {
-                Pair<Content, ShellTerminalWidget> pair = getSuitableProcess(content);
-                if (pair == null) {
-                    //Messages.showInfoMessage("A terminal has been running", "Warnning");
-                    MessagesUtils.showMessage(project, "A terminal has been running", "Error:", NotificationType.ERROR);
+                ConsoleView consoleView = null;
+                Content content = toolWindow.getContentManager().findContent(title);
+                if(content == null) {
+                    consoleView = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+                    content = toolWindow.getContentManager().getFactory().createContent(consoleView.getComponent(), title, false);
+                    toolWindow.getContentManager().addContent(content);
                 } else {
-                    pair.first.setDisplayName(title);
-                    contentManager.setSelectedContent(pair.first);
-                    ShellTerminalWidget terminal = pair.second;
-                    terminal.executeCommand(command);
+                    final JComponent component = content.getComponent();
+                    if (component instanceof ConsoleViewImpl) {
+                        consoleView = (ConsoleViewImpl)component;
+                        consoleView.clear();
+//                    ((ConsoleViewImpl)component).print(message, ConsoleViewContentType.ERROR_OUTPUT);
+                    }
                 }
-
-            }*/
+                ConsoleView console = consoleView;
+                //consoleView.clear();
+                //consoleView.print("Hello from MyPlugin!"+new Date().toString(), ConsoleViewContentType.NORMAL_OUTPUT);
+                //command = "./gradlew build";
+                new Thread(()-> {
+                    String command = cmdBuilder.getCommand();
+                    List<String> parameters = cmdBuilder.getParams();
+                    ExecuteResult result = null;
+                    try {
+                        result = DeployCmdExecuter.exec(console, rootProjectPath, command, parameters, true);
+                        if (result != null && result.getCode() != 0) {
+                            MessagesUtils.showMessage(project, result.getResult(), "Error", NotificationType.ERROR);
+                        } else {
+                            MessagesUtils.showMessage(project, "Git Deploy Ok!", "Done", NotificationType.INFORMATION);
+                        }
+                    } catch (Exception e) {
+                        MessagesUtils.showMessage(project, e.getMessage(), "Error", NotificationType.ERROR);
+                    }
+                }).start();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
