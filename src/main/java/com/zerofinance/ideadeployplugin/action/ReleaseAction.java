@@ -23,7 +23,8 @@ public class ReleaseAction extends AnAction {
             VirtualFile vFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
             if(vFile == null) {
                 // showMessage("Please pick up a valid module!", "Error", NotificationType.ERROR);
-                Messages.showErrorDialog("Please pick up a valid module!", "Error");
+                // Messages.showErrorDialog("Please pick up a valid module!", "Error");
+                MessagesUtils.showMessage(project, "Please pick up a valid module!", "Error:", NotificationType.ERROR);
                 return;
             }
             String modulePath = vFile.getPath();
@@ -35,7 +36,7 @@ public class ReleaseAction extends AnAction {
         } catch (Exception e) {
             e.printStackTrace();
 //            Messages.showErrorDialog(e.getMessage(), "Error");
-            MessagesUtils.showMessage(project, e.getMessage(), NotificationType.ERROR);
+            MessagesUtils.showMessage(project, e.getMessage(), "Error:", NotificationType.ERROR);
         }
     }
 
