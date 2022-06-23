@@ -477,12 +477,12 @@ public final class DeployPluginHandler {
                 try {
                     result = DeployCmdExecuter.exec(console, rootProjectPath, command, parameters, true);
                     if (result != null && result.getCode() != 0) {
-                        MessagesUtils.showMessage(project, result.getResult(), "Error:", NotificationType.ERROR);
+                        MessagesUtils.showMessage(project, result.getResult(), "Error", NotificationType.ERROR);
                     } else {
                         MessagesUtils.showMessage(project, "Git Deploy Ok!", "Done", NotificationType.INFORMATION);
                     }
                 } catch (Exception e) {
-                    MessagesUtils.showMessage(project, e.getMessage(), "Error:", NotificationType.ERROR);
+                    MessagesUtils.showMessage(project, e.getMessage(), "Error", NotificationType.ERROR);
                 }
             }).start();
 

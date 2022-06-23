@@ -84,11 +84,6 @@ public class DeployCmdExecuter {
         return exec(null, workHome, command, params, isBatchScript);
     }
     
-    public static ExecuteResult exec(final ConsoleView console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
-    	boolean debug = false;
-    	return exec(debug, console, workHome, command, parameters, isBatchScript);
-    }
-
     /**
      *
      * @param console
@@ -99,17 +94,21 @@ public class DeployCmdExecuter {
      * @throws IOException
      * @throws InterruptedException
      */
-    public static ExecuteResult exec(boolean debug, final ConsoleView console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
-    	String debugStr = debug?"-x":"";
-        
+    public static ExecuteResult exec(final ConsoleView console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
+        String debug = CommandUtils.isDebug() ? "-x" : "";
+        String moreDetails = CommandUtils.isMoreDetails() ? "-v" : "";
+
         CommandLine cmdLine = null;
         if(SystemUtils.IS_OS_WINDOWS) {
             // For windows
             cmdLine = new CommandLine(CommandUtils.getGitHome()+"\\bin\\bash.exe");
             if(isBatchScript) {
                 // Batch script
-                if(StringUtils.isNotBlank(debugStr)) {
-                    cmdLine.addArgument(debugStr);
+                if(StringUtils.isNotBlank(debug)) {
+                    cmdLine.addArgument(debug);
+                }
+                if(StringUtils.isNotBlank(moreDetails)) {
+                    cmdLine.addArgument(moreDetails);
                 }
                 cmdLine.addArgument(command);
                 if(parameters!=null && !parameters.isEmpty()) {
@@ -136,8 +135,11 @@ public class DeployCmdExecuter {
             // For Unix
             if (isBatchScript) {
                 // Batch script
-                if (StringUtils.isNotBlank(debugStr)) {
-                    cmdLine.addArgument(debugStr);
+                if(StringUtils.isNotBlank(debug)) {
+                    cmdLine.addArgument(debug);
+                }
+                if(StringUtils.isNotBlank(moreDetails)) {
+                    cmdLine.addArgument(moreDetails);
                 }
                 cmdLine.addArgument(command);
                 if (parameters != null && !parameters.isEmpty()) {
