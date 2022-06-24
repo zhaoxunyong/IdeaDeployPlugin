@@ -116,7 +116,7 @@ public final class DeployPluginHandler {
      * http://www.vogella.com/tutorials/EclipseDialogs/article.html
      */
     private String input(String message, String title, String defaultValue) throws Exception {
-        String input = Messages.showInputDialog(message, title, null, defaultValue, new InputValidator() {
+        String input = Messages.showInputDialog(message, title, Messages.getInformationIcon(), defaultValue, new InputValidator() {
 
             @Override
             public boolean checkInput(@NlsSafe String inputString) {
@@ -135,7 +135,7 @@ public final class DeployPluginHandler {
     }
 
     private String desc() throws Exception {
-        String input = Messages.showInputDialog("Adding a message for git description", "Description", null);
+        String input = Messages.showInputDialog("Adding a message for git description", "Description", Messages.getInformationIcon());
         if (StringUtils.isBlank(input)) {
             throw new DeployPluginException("Please input a available description.");
         }
@@ -503,6 +503,8 @@ public final class DeployPluginHandler {
                 // https://stackoverflow.com/questions/51972122/intellij-plugin-development-print-in-console-window
                 // https://intellij-support.jetbrains.com/hc/en-us/community/posts/206756385-How-to-make-a-simple-console-output
                 // https://vimsky.com/examples/detail/java-class-com.intellij.execution.impl.ConsoleViewImpl.html
+                // https://github.com/kungyutucheng/my_gradle_plugin
+                //
                 ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(DeployCmdExecuter.PLUGIN_ID);
 //            toolWindow.show();
 //            toolWindow.activate(null);
