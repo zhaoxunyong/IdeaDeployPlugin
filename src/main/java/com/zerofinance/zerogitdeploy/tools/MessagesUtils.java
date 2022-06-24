@@ -1,4 +1,4 @@
-package com.zerofinance.ideadeployplugin.tools;
+package com.zerofinance.zerogitdeploy.tools;
 
 import com.intellij.notification.*;
 import com.intellij.openapi.project.Project;

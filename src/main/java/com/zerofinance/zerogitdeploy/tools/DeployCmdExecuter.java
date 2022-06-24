@@ -1,4 +1,4 @@
-package com.zerofinance.ideadeployplugin.tools;
+package com.zerofinance.zerogitdeploy.tools;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.zerofinance.ideadeployplugin.setting.GitDeployPluginSetting;
+import com.zerofinance.zerogitdeploy.setting.ZeroGitDeploySetting;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
@@ -96,13 +96,13 @@ public class DeployCmdExecuter {
      * @throws InterruptedException
      */
     public static ExecuteResult exec(final ConsoleView console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
-        String debug = GitDeployPluginSetting.isDebug() ? "-x" : "";
-        String moreDetails = GitDeployPluginSetting.isMoreDetails() ? "-v" : "";
+        String debug = ZeroGitDeploySetting.isDebug() ? "-x" : "";
+        String moreDetails = ZeroGitDeploySetting.isMoreDetails() ? "-v" : "";
 
         CommandLine cmdLine = null;
         if(SystemUtils.IS_OS_WINDOWS) {
             // For windows
-            cmdLine = new CommandLine(GitDeployPluginSetting.getGitHome()+"\\bin\\bash.exe");
+            cmdLine = new CommandLine(ZeroGitDeploySetting.getGitHome()+"\\bin\\bash.exe");
             if(isBatchScript) {
                 // Batch script
                 if(StringUtils.isNotBlank(debug)) {

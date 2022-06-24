@@ -1,4 +1,4 @@
-package com.zerofinance.ideadeployplugin.setting;
+package com.zerofinance.zerogitdeploy.setting;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.fileChooser.FileChooser;
@@ -20,7 +20,7 @@ import java.awt.event.ActionListener;
  * @since 2020/3/17 9:22 上午
  * application 级别的properties Component
  */
-public class GitDeployPluginSetting implements Configurable {
+public class ZeroGitDeploySetting implements Configurable {
     private JTextField textField;
     private JPanel mainPanel;
     private JButton button1;
@@ -37,7 +37,7 @@ public class GitDeployPluginSetting implements Configurable {
 
     private static final String RUNNING_IN_TERMINAL_KEY = "gitDeployPluginRunningInTerminalKey";
 
-    public GitDeployPluginSetting() {
+    public ZeroGitDeploySetting() {
         textField.setText(PropertiesComponent.getInstance().getValue(GIT_HOME_KEY));
         String scriptURL = PropertiesComponent.getInstance().getValue(SCRIPT_URL_KEY);
         if(StringUtils.isNotBlank(scriptURL)) {

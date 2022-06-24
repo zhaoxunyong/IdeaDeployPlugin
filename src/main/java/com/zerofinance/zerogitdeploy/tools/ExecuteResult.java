@@ -1,4 +1,4 @@
-package com.zerofinance.ideadeployplugin.tools;
+package com.zerofinance.zerogitdeploy.tools;
 
 public class ExecuteResult {
 	private int code;

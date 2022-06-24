@@ -1,11 +1,11 @@
-package com.zerofinance.ideadeployplugin.tools;
+package com.zerofinance.zerogitdeploy.tools;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import com.zerofinance.ideadeployplugin.setting.GitDeployPluginSetting;
+import com.zerofinance.zerogitdeploy.setting.ZeroGitDeploySetting;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -61,7 +61,7 @@ public final class CommandUtils {
     }
     
     private static String getRootUrl() {
-        return GitDeployPluginSetting.getScriptURL();
+        return ZeroGitDeploySetting.getScriptURL();
     }
 
     private static String getParentCmdFile(String projectPath, String cmd) {

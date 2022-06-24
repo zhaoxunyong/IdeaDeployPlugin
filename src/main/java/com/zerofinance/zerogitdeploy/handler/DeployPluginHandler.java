@@ -1,4 +1,4 @@
-package com.zerofinance.ideadeployplugin.tools;
+package com.zerofinance.zerogitdeploy.handler;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -16,8 +16,9 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.terminal.JBTerminalWidget;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
-import com.zerofinance.ideadeployplugin.exception.DeployPluginException;
-import com.zerofinance.ideadeployplugin.setting.GitDeployPluginSetting;
+import com.zerofinance.zerogitdeploy.exception.DeployPluginException;
+import com.zerofinance.zerogitdeploy.setting.ZeroGitDeploySetting;
+import com.zerofinance.zerogitdeploy.tools.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -49,9 +50,9 @@ import java.util.concurrent.TimeUnit;
  */
 @SuppressWarnings("restriction")
 public final class DeployPluginHandler {
-    private Project project;
+    private final Project project;
 
-    private String modulePath;
+    private final String modulePath;
 
     private final static String CHANGEVERSION_BAT = "./changeVersion.sh";
     private final static String RELEASE_BAT = "./release.sh";
@@ -70,46 +71,36 @@ public final class DeployPluginHandler {
     public DeployPluginHandler(Project project, String modulePath) {
         this.project = project;
         this.modulePath = modulePath;
-        String gitHome = GitDeployPluginSetting.getGitHome();
+        String gitHome = ZeroGitDeploySetting.getGitHome();
         if (SystemUtils.IS_OS_WINDOWS && StringUtils.isBlank(gitHome)) {
             throw new DeployPluginException("Please configure Git Home Path from:\n" +
                     "File -> Settings -> GitDeployPlugin");
         }
-        /*// Check terminal is a git-bash
-        try {
-            String rootProjectPath = FileHandlerUtils.getRootProjectPath(modulePath);
-            ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, "ls", null, false);
-            if(executeResult != null && executeResult.getCode() != 0) {
-                throw new DeployPluginException("The Terminal isn't a git bash, please configure it in File->Settings");
-            }
-        } catch (Exception e) {
-            throw new DeployPluginException(e.getMessage());
-        }*/
     }
 
 
-    public boolean preCheck() throws Exception {
+    public boolean preCheck() {
         boolean isConfirm = true;
         ExecuteResult result = null;
         try {
             result = this.gitCheck();
         } catch (Exception e) {
             // Skipping check when the gitCheck.sh isn't existing
-            System.err.println(e);
+            MessagesUtils.showMessage(project, "Skipping checking the status of local git repository!", "Information:", NotificationType.INFORMATION);
         }
         if (result != null && result.getCode() != 0) {
-//        	MessageDialog.openError(shell, "Local Out Of Date", result.getResult());
-            throw new Exception(result.getResult());
+            throw new DeployPluginException(result.getResult());
         } else {
             try {
                 result = this.committedLogWarn();
+                if (result != null && result.getCode() != 0) {
+                    throw new DeployPluginException(result.getResult());
+                } else {
+                    isConfirm = Messages.showYesNoDialog("Did you forget merging some modified code?\n\n" + result.getResult(), "Committed Log Confirm?", null) == 0;
+                }
             } catch (Exception e) {
-                System.err.println(e);
-            }
-            if (result != null) {
-//            	MessageDialog.openError(shell, "Local Out Of Date", result.getResult());
-//            	throw new Exception(result.getResult());
-                isConfirm = Messages.showYesNoDialog("Did you forget merging some modified code?\n\n" + result.getResult(), "Committed Log Confirm?", null) == 0;
+                // Skipping check when the committedLogs.sh isn't existing
+                MessagesUtils.showMessage(project, "Skipping checking the latest committed logs!", "Information:", NotificationType.INFORMATION);
             }
         }
         return isConfirm;
@@ -332,112 +323,125 @@ public final class DeployPluginHandler {
         return "";
     }
 
-    public void changeVersion() throws Exception {
-        String name = "ChangeVersion";
-        String cmdFile = CommandUtils.processScript(modulePath, CHANGEVERSION_BAT);
-        String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
-//        String cmdName = FilenameUtils.getName(cmdFile);
-        String pomVersion = getMavenPomVersion(rootProjectPath);
-        String bPomVersion = StringUtils.substringBeforeLast(pomVersion, ".");
-        String aPomVersion = StringUtils.substringAfterLast(pomVersion, ".").replace("-SNAPSHOT", "");
-        aPomVersion = String.valueOf(Integer.parseInt(aPomVersion) + 1);
-        String defaultValue = bPomVersion + "." + aPomVersion + "-SNAPSHOT";
-        List<String> parameters = Lists.newArrayList();
-
-        String version = input("Please input a available version", "Input a version", defaultValue);
-        parameters.add(version);
-
-        if (parameters != null && !parameters.isEmpty()) {
-            CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
-            runJob(cmdBuilder);
-        }
-    }
-
-    public void newBranch() throws Exception {
-        String cmdFile = CommandUtils.processScript(modulePath, NEWBRANCH_BAT);
-        String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
-//        String cmdName = FilenameUtils.getName(cmdFile);
-        String pomVersion = getMavenPomVersion(rootProjectPath);
-        // 1.5.6->1.6.x
-        String bPomVersion = StringUtils.substringBeforeLast(pomVersion, "."); //1.5
-        String a1PomVersion = StringUtils.substringBeforeLast(bPomVersion, "."); // 1
-        String a2PomVersion = StringUtils.substringAfterLast(bPomVersion, "."); // 5
-        a2PomVersion = String.valueOf(Integer.parseInt(a2PomVersion) + 1);
-        String defaultValue = a1PomVersion + "." + a2PomVersion + ".x"; // 1.6.x
-        List<String> parameters = Lists.newArrayList();
-        String newBranch = input("Please input a available branch name", "Input a branch name", defaultValue);
-        parameters.add(newBranch);
-
-        if (parameters != null && !parameters.isEmpty()) {
-//            String projectPath = project.getLocation().toFile().getPath();
-//            String rootProjectPath = getParentProject(projectPath, cmd);
-            String desc = desc();
-            parameters.add("\"" + desc + "\"");
-            CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
-            runJob(cmdBuilder);
-        }
-    }
-
-    public void mybatisGen() throws Exception {
-        String name = "MybatisGen";
-        String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
-
-        String cmdFile = CommandUtils.processScript(modulePath, MYBATISGEN_BAT);
-//        String cmdName = FilenameUtils.getName(cmdFile);
-        // Using "projectPath" instead of "rootProjectPath"
-        CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, Lists.newArrayList());
-        boolean isConfirm = Messages.showYesNoDialog("Are you sure you want to execute \"mybatis-generator-maven-plugin\"?", "Are you sure?", null) == 0;
-        // boolean isConfirm = MessageDialog.openConfirm(shell, "Mybatis Gen Confirm?", project.getName() + " Mybatis Gen Confirm?");
-        if (isConfirm) {
-            runJob(cmdBuilder);
-        }
-    }
-
-    public void release() throws Exception {
-        String name = "Release";
-        String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
-
-        boolean continute = true;
+    public void changeVersion() {
         try {
-            String snapshotPath = checkHasSnapshotVersion(rootProjectPath);
-            if (StringUtils.isNotBlank(snapshotPath)) {
-                continute = Messages.showYesNoDialog("There is a SNAPSHOT version in " + snapshotPath + ", when the version is released, it's suggested to replace it as release version. Do you want to continue?",
-                        "process confirm?",
-                        null) == 0;
-                // continute = MessageDialog.openConfirm(shell, "process confirm?", "There is a SNAPSHOT version in "+snapshotPath+", when the version is released, it's suggested to replace it as release version. Do you want to continue?");
-            }
-        } catch (Exception e) {
-            // do nothing
-        }
-
-        if (continute) {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmm");
-            String dateString = formatter.format(new Date());
-
-            String releaseType = Messages.showEditableChooseDialog("Which release type do you want to pick?", "Choose", null, new String[]{"release", "hotfix"}, "release", null);
-            if (!"release".equals(releaseType) && !"hotfix".equals(releaseType)) {
-                throw new DeployPluginException("Please pick up either release or hotfix option.");
-            }
-            String cmdFile = CommandUtils.processScript(rootProjectPath, RELEASE_BAT);
-//		            String cmdName = FilenameUtils.getName(cmdFile);
-
+            String cmdFile = CommandUtils.processScript(modulePath, CHANGEVERSION_BAT);
+            String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
+//        String cmdName = FilenameUtils.getName(cmdFile);
             String pomVersion = getMavenPomVersion(rootProjectPath);
-            String defaultValue = pomVersion.replace("-SNAPSHOT", "") + "." + releaseType;
+            String bPomVersion = StringUtils.substringBeforeLast(pomVersion, ".");
+            String aPomVersion = StringUtils.substringAfterLast(pomVersion, ".").replace("-SNAPSHOT", "");
+            aPomVersion = String.valueOf(Integer.parseInt(aPomVersion) + 1);
+            String defaultValue = bPomVersion + "." + aPomVersion + "-SNAPSHOT";
+            List<String> parameters = Lists.newArrayList();
 
-            String inputedVersion = input("Please input a available branch name", "Input a branch name", defaultValue).trim();
-            if (inputedVersion.indexOf(" ") != -1) {
-                throw new Exception("The version is invalid.");
-            }
+            String version = input("Please input a available version", "Input a version", defaultValue);
+            parameters.add(version);
 
-            if (StringUtils.isNotBlank(inputedVersion)) {
-//		                String projectPath = project.getLocation().toFile().getPath();
-//		                String rootProjectPath = getParentProject(projectPath, cmd);
-
-                String desc = desc();
-                List<String> parameters = Lists.newArrayList(inputedVersion, dateString, "false", "\"" + desc + "\"");
+            if (parameters != null && !parameters.isEmpty()) {
                 CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
                 runJob(cmdBuilder);
             }
+        } catch (Exception e) {
+            throw new DeployPluginException(e.getMessage(), e);
+        }
+    }
+
+    public void newBranch() {
+        try {
+            String cmdFile = CommandUtils.processScript(modulePath, NEWBRANCH_BAT);
+            String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
+//        String cmdName = FilenameUtils.getName(cmdFile);
+            String pomVersion = getMavenPomVersion(rootProjectPath);
+            // 1.5.6->1.6.x
+            String bPomVersion = StringUtils.substringBeforeLast(pomVersion, "."); //1.5
+            String a1PomVersion = StringUtils.substringBeforeLast(bPomVersion, "."); // 1
+            String a2PomVersion = StringUtils.substringAfterLast(bPomVersion, "."); // 5
+            a2PomVersion = String.valueOf(Integer.parseInt(a2PomVersion) + 1);
+            String defaultValue = a1PomVersion + "." + a2PomVersion + ".x"; // 1.6.x
+            List<String> parameters = Lists.newArrayList();
+            String newBranch = input("Please input a available branch name", "Input a branch name", defaultValue);
+            parameters.add(newBranch);
+
+            if (parameters != null && !parameters.isEmpty()) {
+//            String projectPath = project.getLocation().toFile().getPath();
+//            String rootProjectPath = getParentProject(projectPath, cmd);
+                String desc = desc();
+                parameters.add("\"" + desc + "\"");
+                CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
+                runJob(cmdBuilder);
+            }
+        } catch (Exception e) {
+            throw new DeployPluginException(e.getMessage(), e);
+        }
+    }
+
+    public void mybatisGen() {
+        try {
+            String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
+
+            String cmdFile = CommandUtils.processScript(modulePath, MYBATISGEN_BAT);
+//        String cmdName = FilenameUtils.getName(cmdFile);
+            // Using "projectPath" instead of "rootProjectPath"
+            CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, Lists.newArrayList());
+            boolean isConfirm = Messages.showYesNoDialog("Are you sure you want to execute \"mybatis-generator-maven-plugin\"?", "Are you sure?", null) == 0;
+            // boolean isConfirm = MessageDialog.openConfirm(shell, "Mybatis Gen Confirm?", project.getName() + " Mybatis Gen Confirm?");
+            if (isConfirm) {
+                runJob(cmdBuilder);
+            }
+        } catch (Exception e) {
+            throw new DeployPluginException(e.getMessage(), e);
+        }
+    }
+
+    public void release() {
+        try {
+            String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
+
+            boolean continute = true;
+            try {
+                String snapshotPath = checkHasSnapshotVersion(rootProjectPath);
+                if (StringUtils.isNotBlank(snapshotPath)) {
+                    continute = Messages.showYesNoDialog("There is a SNAPSHOT version in " + snapshotPath + ", when the version is released, it's suggested to replace it as release version. Do you want to continue?",
+                            "process confirm?",
+                            null) == 0;
+                    // continute = MessageDialog.openConfirm(shell, "process confirm?", "There is a SNAPSHOT version in "+snapshotPath+", when the version is released, it's suggested to replace it as release version. Do you want to continue?");
+                }
+            } catch (Exception e) {
+                // do nothing
+            }
+
+            if (continute) {
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmm");
+                String dateString = formatter.format(new Date());
+
+                String releaseType = Messages.showEditableChooseDialog("Which release type do you want to pick?", "Choose", null, new String[]{"release", "hotfix"}, "release", null);
+                if (!"release".equals(releaseType) && !"hotfix".equals(releaseType)) {
+                    throw new DeployPluginException("Please pick up either release or hotfix option.");
+                }
+                String cmdFile = CommandUtils.processScript(rootProjectPath, RELEASE_BAT);
+//		            String cmdName = FilenameUtils.getName(cmdFile);
+
+                String pomVersion = getMavenPomVersion(rootProjectPath);
+                String defaultValue = pomVersion.replace("-SNAPSHOT", "") + "." + releaseType;
+
+                String inputedVersion = input("Please input a available branch name", "Input a branch name", defaultValue).trim();
+                if (inputedVersion.indexOf(" ") != -1) {
+                    throw new DeployPluginException("The version is invalid.");
+                }
+
+                if (StringUtils.isNotBlank(inputedVersion)) {
+//		                String projectPath = project.getLocation().toFile().getPath();
+//		                String rootProjectPath = getParentProject(projectPath, cmd);
+
+                    String desc = desc();
+                    List<String> parameters = Lists.newArrayList(inputedVersion, dateString, "false", "\"" + desc + "\"");
+                    CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, parameters);
+                    runJob(cmdBuilder);
+                }
+            }
+        } catch (Exception e) {
+            throw new DeployPluginException(e.getMessage(), e);
         }
     }
 
@@ -446,12 +450,12 @@ public final class DeployPluginHandler {
             String rootProjectPath = cmdBuilder.getWorkHome();
 //            String title = new File(rootProjectPath).getName();
             String title = DeployCmdExecuter.PLUGIN_TITLE;
-            if(GitDeployPluginSetting.isRunnInTerminal()) {
+            if(ZeroGitDeploySetting.isRunnInTerminal()) {
                 String command = cmdBuilder.getCommand();
                 List<String> parameters = cmdBuilder.getParams();
                 //Working via terminal
-                String debug = GitDeployPluginSetting.isDebug() ? "-x" : "";
-                String moreDetails = GitDeployPluginSetting.isMoreDetails() ? "-v" : "";
+                String debug = ZeroGitDeploySetting.isDebug() ? "-x" : "";
+                String moreDetails = ZeroGitDeploySetting.isMoreDetails() ? "-v" : "";
                 command = "bash " + debug + " " + moreDetails + " " + command;
                 if (parameters != null && !parameters.isEmpty()) {
                     String params = Joiner.on(" ").join(parameters);

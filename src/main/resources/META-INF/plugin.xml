@@ -1,11 +1,11 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>com.zerofinance.IdeaDeployPlugin</id>
+    <id>com.zerofinance.ZeroGitDeployToolkit</id>
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>IdeaDeployPlugin</name>
+    <name>Zero Git Deploy Toolkit</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="dave.zhao@zerofinance.com" url="https://www.zerofinance.com">ZeroFinance</vendor>
@@ -14,13 +14,12 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    A git plugin tool for Intellij IDEA:
+    A git deploy toolkit for Intellij IDEA:
     <li>1. Choose the "Zero" menu.</li>
     <li>2. Choose the option you want to execute.</li>
     ]]></description>
 
     <change-notes><![CDATA[
-     <li>1.0.1 : New: Adding a confirm: which module you want to pick up.</li>
      <li>1.0.0 : init </li>
     ]]>
     </change-notes>
@@ -37,23 +36,23 @@
         <toolWindow id="GitDeployPlugin"
                     icon="AllIcons.Actions.ChangeView"
                     anchor="bottom"
-                    factoryClass="com.zerofinance.ideadeployplugin.GitDeployPlugin"></toolWindow>
+                    factoryClass="com.zerofinance.zerogitdeploy.ZeroGitDeploy"></toolWindow>
         <notificationGroup id="Custom Notification Group"
                            displayType="BALLOON" />
-        <applicationConfigurable instance="com.zerofinance.ideadeployplugin.setting.GitDeployPluginSetting" dynamic="true"/>
+        <applicationConfigurable instance="com.zerofinance.zerogitdeploy.setting.ZeroGitDeploySetting" dynamic="true"/>
     </extensions>
 
     <actions>
 
-        <!--<action id="PopupAction" class="com.zerofinance.ideadeployplugin.PopupAction" text="PopupAction"
+        <!--<action id="PopupAction" class="com.zerofinance.zerogitdeploy.PopupAction" text="PopupAction"
                 description="PopupAction">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>-->
-        <!--<action id="MenuAction" class="com.zerofinance.ideadeployplugin.MenuAction" text="MenuAction"
+        <!--<action id="MenuAction" class="com.zerofinance.zerogitdeploy.MenuAction" text="MenuAction"
                 description="MenuAction">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>-->
-        <!--<action id="ZeroMainAction" class="com.zerofinance.ideadeployplugin.action.ReleaseAction" text="ZeroGitDeploy"
+        <!--<action id="ZeroMainAction" class="com.zerofinance.zerogitdeploy.action.ReleaseAction" text="ZeroGitDeploy"
                 description="A git deploy plugin tool">
             <add-to-group group-id="MainMenu" anchor="after" relative-to-action="ToolsMenu"/>
         </action>-->
@@ -61,13 +60,13 @@
         <group id="ZeroMainAction" text="Zero" description="A git deploy plugin tool">
             <add-to-group group-id="MainMenu" anchor="after" relative-to-action="ToolsMenu"/>
             <!-- icon can see: https://intellij-icons.jetbrains.design/ -->
-            <action id="Release" class="com.zerofinance.ideadeployplugin.action.ReleaseAction" icon="AllIcons.Actions.Lightning" text="Release" description="Git Release" />
+            <action id="Release" class="com.zerofinance.zerogitdeploy.action.ReleaseAction" icon="AllIcons.Actions.Lightning" text="Release" description="Git Release" />
             <separator/>
-            <action id="NewBranch" class="com.zerofinance.ideadeployplugin.action.NewBranchAction" icon="AllIcons.Actions.OpenNewTab" text="NewBranch" description="New Branch" />
+            <action id="NewBranch" class="com.zerofinance.zerogitdeploy.action.NewBranchAction" icon="AllIcons.Actions.OpenNewTab" text="NewBranch" description="New Branch" />
             <separator/>
-            <action id="ChangeVersion" class="com.zerofinance.ideadeployplugin.action.ChangeVersionAction" icon="AllIcons.Actions.ChangeView" text="ChangeVersion" description="Change Version" />
+            <action id="ChangeVersion" class="com.zerofinance.zerogitdeploy.action.ChangeVersionAction" icon="AllIcons.Actions.ChangeView" text="ChangeVersion" description="Change Version" />
             <separator/>
-            <action id="MybatisGen" class="com.zerofinance.ideadeployplugin.action.MybatisGenAction" icon="AllIcons.Actions.InlayRenameInNoCodeFilesActive" text="MybatisGen" description="Mybatis Gen" />
+            <action id="MybatisGen" class="com.zerofinance.zerogitdeploy.action.MybatisGenAction" icon="AllIcons.Actions.InlayRenameInNoCodeFilesActive" text="MybatisGen" description="Mybatis Gen" />
         </group>
     </actions>
 </idea-plugin>

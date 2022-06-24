@@ -1,4 +1,4 @@
-package com.zerofinance.ideadeployplugin;
+package com.zerofinance.zerogitdeploy;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopup;
@@ -7,9 +7,6 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBList;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
-import com.zerofinance.ideadeployplugin.tools.DeployCmdExecuter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -24,7 +21,7 @@ import java.awt.event.MouseListener;
 /**
  * Tool windows control.控制文本显示 2017/3/18 19:58
  */
-public class GitDeployPlugin implements ToolWindowFactory {
+public class ZeroGitDeploy implements ToolWindowFactory {
 
     private ToolWindow myToolWindow;
     private JPanel mPanel;
