@@ -18,9 +18,8 @@ public class ChangeVersionAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent event) {
+        Project project = event.getProject();
         try {
-            Project project = event.getProject();
-
             VirtualFile vFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
             if(vFile == null) {
                 // showMessage("Please pick up a valid module!", "Error", NotificationType.ERROR);
@@ -40,7 +39,7 @@ public class ChangeVersionAction extends AnAction {
 
         } catch (Exception e) {
             e.printStackTrace();
-            Messages.showErrorDialog(e.getMessage(), "Error");
+            MessagesUtils.showMessage(project, e.getMessage(), "Error:", NotificationType.ERROR);
         }
     }
 
