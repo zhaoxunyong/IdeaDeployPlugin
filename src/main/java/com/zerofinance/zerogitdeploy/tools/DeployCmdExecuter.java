@@ -31,7 +31,7 @@ import com.google.common.base.Joiner;
  * @since 1.0
  */
 public class DeployCmdExecuter {
-    public final static String PLUGIN_ID = "GitDeployPlugin";
+    public final static String PLUGIN_ID = "ZeroGitDeploy";
     public final static String PLUGIN_TITLE = "Git Deploy";
 
 //    public static void success(Shell shell, String context){

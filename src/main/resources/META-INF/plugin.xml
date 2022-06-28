@@ -41,7 +41,7 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
-        <toolWindow id="GitDeployPlugin"
+        <toolWindow id="ZeroGitDeploy"
                     icon="AllIcons.Actions.ChangeView"
                     anchor="bottom"
                     factoryClass="com.zerofinance.zerogitdeploy.ZeroGitDeploy"></toolWindow>
