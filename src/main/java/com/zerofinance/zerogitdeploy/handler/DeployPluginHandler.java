@@ -54,6 +54,8 @@ public final class DeployPluginHandler {
 
     private final String modulePath;
 
+    private final String moduleName;
+
     private final static String CHANGEVERSION_BAT = "./changeVersion.sh";
     private final static String RELEASE_BAT = "./release.sh";
     private final static String NEWBRANCH_BAT = "./newBranch.sh";
@@ -68,9 +70,10 @@ public final class DeployPluginHandler {
     /**
      *
      */
-    public DeployPluginHandler(Project project, String modulePath) {
+    public DeployPluginHandler(Project project, String modulePath, String moduleName) {
         this.project = project;
         this.modulePath = modulePath;
+        this.moduleName = moduleName;
         String gitHome = ZeroGitDeploySetting.getGitHome();
         if (SystemUtils.IS_OS_WINDOWS && StringUtils.isBlank(gitHome)) {
             throw new DeployPluginException("Please configure Git Home Path from:\n" +
@@ -86,7 +89,7 @@ public final class DeployPluginHandler {
             result = this.gitCheck();
         } catch (Exception e) {
             // Skipping check when the gitCheck.sh isn't existing
-            MessagesUtils.showMessage(project, "Skipping checking the status of local git repository!", "Information:", NotificationType.INFORMATION);
+            MessagesUtils.showMessage(project, "Skipping checking the status of local git repository!", moduleName+": Information:", NotificationType.INFORMATION);
         }
         if (result != null && result.getCode() != 0) {
             throw new DeployPluginException(result.getResult());
@@ -96,11 +99,11 @@ public final class DeployPluginHandler {
                 if (result != null && result.getCode() != 0) {
                     throw new DeployPluginException(result.getResult());
                 } else {
-                    isConfirm = Messages.showYesNoDialog("Did you forget merging some modified code?\n\n" + result.getResult(), "Committed Log Confirm?", null) == 0;
+                    isConfirm = Messages.showYesNoDialog("Did you forget merging some modified code?\n\n" + result.getResult(), moduleName+": Committed Log Confirm?", Messages.getQuestionIcon()) == 0;
                 }
             } catch (Exception e) {
                 // Skipping check when the committedLogs.sh isn't existing
-                MessagesUtils.showMessage(project, "Skipping checking the latest committed logs!", "Information:", NotificationType.INFORMATION);
+                MessagesUtils.showMessage(project, "Skipping checking the latest committed logs!", moduleName+": Information:", NotificationType.INFORMATION);
             }
         }
         return isConfirm;
@@ -135,7 +138,7 @@ public final class DeployPluginHandler {
     }
 
     private String desc() throws Exception {
-        String input = Messages.showInputDialog("Adding a message for git description", "Description", Messages.getInformationIcon());
+        String input = Messages.showInputDialog("Adding a message for git description", moduleName+": Description", Messages.getInformationIcon());
         if (StringUtils.isBlank(input)) {
             throw new DeployPluginException("Please input a available description.");
         }
@@ -335,7 +338,7 @@ public final class DeployPluginHandler {
             String defaultValue = bPomVersion + "." + aPomVersion + "-SNAPSHOT";
             List<String> parameters = Lists.newArrayList();
 
-            String version = input("Please input a available version", "Input a version", defaultValue);
+            String version = input("Please input a available version", moduleName+": Input a version", defaultValue);
             parameters.add(version);
 
             if (parameters != null && !parameters.isEmpty()) {
@@ -360,7 +363,7 @@ public final class DeployPluginHandler {
             a2PomVersion = String.valueOf(Integer.parseInt(a2PomVersion) + 1);
             String defaultValue = a1PomVersion + "." + a2PomVersion + ".x"; // 1.6.x
             List<String> parameters = Lists.newArrayList();
-            String newBranch = input("Please input a available branch name", "Input a branch name", defaultValue);
+            String newBranch = input("Please input a available branch name", moduleName+": Input a branch name", defaultValue);
             parameters.add(newBranch);
 
             if (parameters != null && !parameters.isEmpty()) {
@@ -384,7 +387,8 @@ public final class DeployPluginHandler {
 //        String cmdName = FilenameUtils.getName(cmdFile);
             // Using "projectPath" instead of "rootProjectPath"
             CmdBuilder cmdBuilder = new CmdBuilder(rootProjectPath, cmdFile, true, Lists.newArrayList());
-            boolean isConfirm = Messages.showYesNoDialog("Are you sure you want to execute \"mybatis-generator-maven-plugin\"?", "Are you sure?", null) == 0;
+            boolean isConfirm = Messages.showYesNoDialog("Are you sure you want to execute \"mybatis-generator-maven-plugin\"?",
+                    moduleName+": Are you sure?", Messages.getQuestionIcon()) == 0;
             // boolean isConfirm = MessageDialog.openConfirm(shell, "Mybatis Gen Confirm?", project.getName() + " Mybatis Gen Confirm?");
             if (isConfirm) {
                 runJob(cmdBuilder);
@@ -403,8 +407,8 @@ public final class DeployPluginHandler {
                 String snapshotPath = checkHasSnapshotVersion(rootProjectPath);
                 if (StringUtils.isNotBlank(snapshotPath)) {
                     continute = Messages.showYesNoDialog("There is a SNAPSHOT version in " + snapshotPath + ", when the version is released, it's suggested to replace it as release version. Do you want to continue?",
-                            "process confirm?",
-                            null) == 0;
+                            moduleName+": process confirm?",
+                            Messages.getQuestionIcon()) == 0;
                     // continute = MessageDialog.openConfirm(shell, "process confirm?", "There is a SNAPSHOT version in "+snapshotPath+", when the version is released, it's suggested to replace it as release version. Do you want to continue?");
                 }
             } catch (Exception e) {
@@ -415,7 +419,8 @@ public final class DeployPluginHandler {
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmm");
                 String dateString = formatter.format(new Date());
 
-                String releaseType = Messages.showEditableChooseDialog("Which release type do you want to pick?", "Choose", null, new String[]{"release", "hotfix"}, "release", null);
+                String releaseType = Messages.showEditableChooseDialog("Which release type do you want to pick?",
+                        moduleName+": Choose", null, new String[]{"release", "hotfix"}, "release", null);
                 if (!"release".equals(releaseType) && !"hotfix".equals(releaseType)) {
                     throw new DeployPluginException("Please pick up either release or hotfix option.");
                 }
@@ -425,7 +430,7 @@ public final class DeployPluginHandler {
                 String pomVersion = getMavenPomVersion(rootProjectPath);
                 String defaultValue = pomVersion.replace("-SNAPSHOT", "") + "." + releaseType;
 
-                String inputedVersion = input("Please input a available branch name", "Input a branch name", defaultValue).trim();
+                String inputedVersion = input("Please input a available branch name", moduleName+": Input a branch name", defaultValue).trim();
                 if (inputedVersion.indexOf(" ") != -1) {
                     throw new DeployPluginException("The version is invalid.");
                 }
@@ -479,7 +484,7 @@ public final class DeployPluginHandler {
                     Pair<Content, ShellTerminalWidget> pair = getSuitableProcess(content);
                     if (pair == null) {
                         //Messages.showInfoMessage("A terminal has been running", "Warnning");
-                        MessagesUtils.showMessage(project, "A terminal has been running", "Error:", NotificationType.ERROR);
+                        MessagesUtils.showMessage(project, "A terminal has been running", moduleName+": Error:", NotificationType.ERROR);
                     } else {
                         pair.first.setDisplayName(title);
                         contentManager.setSelectedContent(pair.first);
@@ -494,7 +499,7 @@ public final class DeployPluginHandler {
                         while(finalTerminal.hasRunningCommands()) {
                             TimeUnit.MILLISECONDS.sleep(100L);
                         }
-                        MessagesUtils.showMessage(project, "Git Deploy Done, please check if Terminal has any error appeared!", "Done", NotificationType.INFORMATION);
+                        MessagesUtils.showMessage(project, "Git Deploy Done, please check if Terminal has any error appeared!", moduleName+": Done", NotificationType.INFORMATION);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -536,12 +541,12 @@ public final class DeployPluginHandler {
                     try {
                         result = DeployCmdExecuter.exec(console, rootProjectPath, command, parameters, true);
                         if (result != null && result.getCode() != 0) {
-                            MessagesUtils.showMessage(project, result.getResult(), "Error", NotificationType.ERROR);
+                            MessagesUtils.showMessage(project, result.getResult(), moduleName+": Error", NotificationType.ERROR);
                         } else {
-                            MessagesUtils.showMessage(project, "Git Deploy Ok!", "Done", NotificationType.INFORMATION);
+                            MessagesUtils.showMessage(project, "Git Deploy Ok!", moduleName+": Done", NotificationType.INFORMATION);
                         }
                     } catch (Exception e) {
-                        MessagesUtils.showMessage(project, e.getMessage(), "Error", NotificationType.ERROR);
+                        MessagesUtils.showMessage(project, e.getMessage(), moduleName+": Error", NotificationType.ERROR);
                     }
                 }).start();
             }

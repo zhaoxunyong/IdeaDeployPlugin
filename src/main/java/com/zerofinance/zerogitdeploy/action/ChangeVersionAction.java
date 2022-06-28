@@ -19,20 +19,20 @@ public class ChangeVersionAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent event) {
         Project project = event.getProject();
-        try {
-            VirtualFile vFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
-            if(vFile == null) {
-                // showMessage("Please pick up a valid module!", "Error", NotificationType.ERROR);
-                // Messages.showErrorDialog("Please pick up a valid module!", "Error");
-                MessagesUtils.showMessage(project, "Please pick up a valid module!", "Error:", NotificationType.ERROR);
-                return;
-            }
-            String modulePath = vFile.getPath();
-            String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
-            String moduleName = new File(rootProjectPath).getName();
-            MessagesUtils.showMessage(project, "\""+moduleName+"\" was selected!", "Information:", NotificationType.INFORMATION);
+        VirtualFile vFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
+        if(vFile == null) {
+            // showMessage("Please pick up a valid module!", "Error", NotificationType.ERROR);
+            // Messages.showErrorDialog("Please pick up a valid module!", "Error");
+            MessagesUtils.showMessage(project, "Please pick up a valid module!", "Error:", NotificationType.ERROR);
+            return;
+        }
+        String modulePath = vFile.getPath();
+        String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
+        String moduleName = new File(rootProjectPath).getName();
+//        MessagesUtils.showMessage(project, "\""+moduleName+"\" was selected!", "Information:", NotificationType.INFORMATION);
 
-            DeployPluginHandler handler = new DeployPluginHandler(project, modulePath);
+        try {
+            DeployPluginHandler handler = new DeployPluginHandler(project, modulePath, moduleName);
             if(handler.preCheck()) {
                 handler.changeVersion();
             }

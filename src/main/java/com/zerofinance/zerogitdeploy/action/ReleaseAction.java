@@ -18,21 +18,21 @@ public class ReleaseAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent event) {
         Project project = event.getProject();
+
+        VirtualFile vFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
+        if(vFile == null) {
+            // showMessage("Please pick up a valid module!", "Error", NotificationType.ERROR);
+            // Messages.showErrorDialog("Please pick up a valid module!", "Error");
+            MessagesUtils.showMessage(project, "Please pick up a valid module!", "Error:", NotificationType.ERROR);
+            return;
+        }
+        String modulePath = vFile.getPath();
+        String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
+        String moduleName = new File(rootProjectPath).getName();
+//        MessagesUtils.showMessage(project, "\""+moduleName+"\" was selected!", "Information:", NotificationType.INFORMATION);
+
         try {
-
-            VirtualFile vFile = event.getData(PlatformDataKeys.VIRTUAL_FILE);
-            if(vFile == null) {
-                // showMessage("Please pick up a valid module!", "Error", NotificationType.ERROR);
-                // Messages.showErrorDialog("Please pick up a valid module!", "Error");
-                MessagesUtils.showMessage(project, "Please pick up a valid module!", "Error:", NotificationType.ERROR);
-                return;
-            }
-            String modulePath = vFile.getPath();
-            String rootProjectPath = CommandUtils.getRootProjectPath(modulePath);
-            String moduleName = new File(rootProjectPath).getName();
-            MessagesUtils.showMessage(project, "\""+moduleName+"\" was selected!", "Information:", NotificationType.INFORMATION);
-
-            DeployPluginHandler handler = new DeployPluginHandler(project, modulePath);
+            DeployPluginHandler handler = new DeployPluginHandler(project, modulePath, moduleName);
             if(handler.preCheck()) {
                 handler.release();
             }
@@ -40,7 +40,7 @@ public class ReleaseAction extends AnAction {
         } catch (Exception e) {
             e.printStackTrace();
 //            Messages.showErrorDialog(e.getMessage(), "Error");
-            MessagesUtils.showMessage(project, e.getMessage(), "Error:", NotificationType.ERROR);
+            MessagesUtils.showMessage(project, e.getMessage(), moduleName+"： Error:", NotificationType.ERROR);
         }
     }
 

@@ -14,13 +14,21 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    A git deploy toolkit for Intellij IDEA:
-    <li>1. Choose the "Zero" menu.</li>
-    <li>2. Choose the option you want to execute.</li>
+    A Zero Git Deploy Toolkit for Intellij IDEA, which can help us deploy git project more convenient. <br />
+    Before we released git branch manually, but made some mistakes often, so we developed this toolkit to help our developer release git branch automatically. <br /><br />
+    <b>features:</b>
+    <ul>
+        <li>1. Release: Creating a new branch from local repository and push it to a remote git branch automatically.</li>
+        <li>2. NewBranch: Creating a new branch from local repository automatically.</li>
+        <li>3. ChangVersion: Changing a new maven version from local repository automatically.</li>
+        <li>4. MybatisGen: Executing the plugin("mybatis-generator-maven-plugin") to generate mybatis sql files automatically.</li>
+    </ul>
     ]]></description>
 
     <change-notes><![CDATA[
-     <li>1.0.0 : init </li>
+    <ul>
+        <li>1.0.0 : init </li>
+    </ul>
     ]]>
     </change-notes>
 
