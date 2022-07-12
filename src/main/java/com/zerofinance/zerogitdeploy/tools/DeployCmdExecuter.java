@@ -31,8 +31,6 @@ import com.google.common.base.Joiner;
  * @since 1.0
  */
 public class DeployCmdExecuter {
-    public final static String PLUGIN_ID = "GitDeployPlugin";
-    public final static String PLUGIN_TITLE = "Git Deploy";
 
 //    public static void success(Shell shell, String context){
 //        MessageDialog.openInformation(shell, SLICE_PLUGIN, context);
@@ -90,7 +88,6 @@ public class DeployCmdExecuter {
      * @param console
      * @param workHome
      * @param command
-     * @param params
      * @return
      * @throws IOException
      * @throws InterruptedException

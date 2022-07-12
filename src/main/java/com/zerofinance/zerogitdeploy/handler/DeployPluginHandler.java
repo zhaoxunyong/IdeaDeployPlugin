@@ -454,7 +454,7 @@ public final class DeployPluginHandler {
         try {
             String rootProjectPath = cmdBuilder.getWorkHome();
 //            String title = new File(rootProjectPath).getName();
-            String title = DeployCmdExecuter.PLUGIN_TITLE;
+            String title = PluginConstant.CONTENT_TITLE;
             if(ZeroGitDeploySetting.isRunnInTerminal()) {
                 String command = cmdBuilder.getCommand();
                 List<String> parameters = cmdBuilder.getParams();
@@ -510,7 +510,7 @@ public final class DeployPluginHandler {
                 // https://vimsky.com/examples/detail/java-class-com.intellij.execution.impl.ConsoleViewImpl.html
                 // https://github.com/kungyutucheng/my_gradle_plugin
                 //
-                ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(DeployCmdExecuter.PLUGIN_ID);
+                ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(PluginConstant.PLUGIN_ID);
 //            toolWindow.show();
 //            toolWindow.activate(null);
                 toolWindow.setAvailable(true,null);
